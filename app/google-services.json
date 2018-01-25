@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "693039679906",
+    "firebase_url": "https://kmaaoapp.firebaseio.com",
+    "project_id": "kmaaoapp",
+    "storage_bucket": "kmaaoapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:693039679906:android:f6ba8a1472bd8dd8",
+        "android_client_info": {
+          "package_name": "com.apextechies.kmaaoapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "693039679906-deol4odjjoo4tt52s3eabllb52eic0d1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.apextechies.kmaaoapp",
+            "certificate_hash": "321bbf7ac25ec1b2fa18f142475fdaade22eff3e"
+          }
+        },
+        {
+          "client_id": "693039679906-1f16s4g036n1ecvjgpi5uhvjg4o1dgda.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX3SdCZghqwCtngQrZcUmEUYbXRC1Akl0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "693039679906-1f16s4g036n1ecvjgpi5uhvjg4o1dgda.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
