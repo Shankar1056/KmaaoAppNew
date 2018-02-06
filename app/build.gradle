@@ -16,7 +16,16 @@ repositories {
 
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'kmaaoapp'
+            keyPassword 'kmaaoapp'
+            storeFile file('E:/All Keystore/KmaaoApp/kmaaoapp.jks')
+            storePassword 'kmaaoapp'
+        }
+    }
     compileSdkVersion 27
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.apextechies.kmaaoapp"
         minSdkVersion 16
@@ -25,12 +34,14 @@ android {
         versionName "1.0"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
         debug {
             minifyEnabled false
@@ -43,6 +54,8 @@ android {
     }
     dexOptions {
         javaMaxHeapSize "4g"
+    }
+    productFlavors {
     }
 }
 
