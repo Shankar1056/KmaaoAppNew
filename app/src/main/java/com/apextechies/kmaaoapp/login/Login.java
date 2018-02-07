@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.activity.MainActivity;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
+import com.apextechies.kmaaoapp.common.PreferenceName;
 import com.apextechies.kmaaoapp.model.UserDetails;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
@@ -115,13 +116,7 @@ public class Login extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == ResultCodes.OK) {
-                if (ClsGeneral.getPreferences(Login.this, "user_id").equalsIgnoreCase("")) {
-                    startActivity(new Intent(Login.this, SignupActivity.class));
-                    finish();
-                } else {
-                    startActivity(new Intent(Login.this, MainActivity.class));
-                    finish();
-                }
+
                 callApi(response.getPhoneNumber());
             } else {
                 // Sign in failed
@@ -151,18 +146,7 @@ public class Login extends AppCompatActivity {
 
                     Gson gson = new Gson();
                     UserDetails details = gson.fromJson(response,UserDetails.class);
-                    if (details.getStatus().equalsIgnoreCase("true")){
-                        if (details.getData().get(0).getUser_email().equalsIgnoreCase("")){
-                            startActivity(new Intent(Login.this,SignupActivity.class));
-                            finish();
-                        }else if (details.getData().get(0).getDevice_unique_id().equalsIgnoreCase("")){
-                            Toast.makeText(Login.this, "Contact Admin", Toast.LENGTH_SHORT).show();
-                            return;
-                        }else {
-                            startActivity(new Intent(Login.this,MainActivity.class));
-                            finish();
-                        }
-                    }
+                    setUserDetails(details);
                 }
             }
         });
@@ -171,6 +155,30 @@ public class Login extends AppCompatActivity {
         web.setReqType(false);
         web.execute(WebService.LOGIN);
 
+    }
+
+    private void setUserDetails(UserDetails details) {
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_ID, details.getData().get(0).getUser_id());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_NAME, details.getData().get(0).getUser_name());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_EMAIL, details.getData().get(0).getUser_email());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_PHONE, details.getData().get(0).getUser_phone());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_UNIQUE_ID, details.getData().get(0).getDevice_unique_id());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
+        if (details.getStatus().equalsIgnoreCase("true")){
+            if (details.getData().get(0).getUser_email().equalsIgnoreCase("")){
+                startActivity(new Intent(Login.this,SignupActivity.class).
+                        putExtra("id",details.getData().get(0).getUser_id()));
+                finish();
+            }else if (details.getData().get(0).getDevice_unique_id().equalsIgnoreCase("")){
+                Toast.makeText(Login.this, "Contact Admin", Toast.LENGTH_SHORT).show();
+                return;
+            }else {
+                startActivity(new Intent(Login.this,MainActivity.class));
+                finish();
+            }
+        }
     }
 
 }

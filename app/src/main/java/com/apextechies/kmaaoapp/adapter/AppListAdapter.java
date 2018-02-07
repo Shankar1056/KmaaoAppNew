@@ -10,8 +10,7 @@ import android.widget.TextView;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
-import com.apextechies.kmaaoapp.model.AppListModel;
-import com.bumptech.glide.Glide;
+import com.apextechies.kmaaoapp.model.CategoryDateModel;
 
 import java.util.List;
 
@@ -24,7 +23,7 @@ import butterknife.ButterKnife;
 
 public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.MyViewHolder> {
 
-    private List<AppListModel> subCatListModels;
+    private List<CategoryDateModel> subCatListModels;
     private Context context;
     private int categorylist_row;
     private OnClickEvent onClickListener ;
@@ -42,7 +41,7 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.MyViewHo
     }
 
 
-    public AppListAdapter(Context context, List<AppListModel> subCatListModels, int categorylist_row, OnClickEvent onClickListener) {
+    public AppListAdapter(Context context, List<CategoryDateModel> subCatListModels, int categorylist_row, OnClickEvent onClickListener) {
         this.context = context;
         this.subCatListModels = subCatListModels;
         this.categorylist_row = categorylist_row;
@@ -59,9 +58,9 @@ public class AppListAdapter extends RecyclerView.Adapter<AppListAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        final AppListModel pl = subCatListModels.get(position);
-        holder.text_AppName.setText(pl.getName());
-        Glide.with(context).load(pl.getImage()).into(holder.app_image);
+        final CategoryDateModel pl = subCatListModels.get(position);
+        holder.text_AppName.setText(pl.getApplication_name());
+        //Glide.with(context).load(pl.getImage()).into(holder.app_image);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

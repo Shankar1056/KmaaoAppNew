@@ -1,6 +1,5 @@
 package com.apextechies.kmaaoapp.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,11 +11,12 @@ import android.view.MenuItem;
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.adapter.AppListAdapter;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
-import com.apextechies.kmaaoapp.model.AppListModel;
+import com.apextechies.kmaaoapp.model.CategoryModel;
+import com.apextechies.kmaaoapp.utilz.Download_web;
+import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
+import com.apextechies.kmaaoapp.utilz.WebService;
 import com.crashlytics.android.Crashlytics;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,9 +38,31 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         initWidgit();
+        callCategoryApi();
     }
 
-        @Override
+    private void callCategoryApi() {
+        Download_web web = new Download_web(MainActivity.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+
+                if (response!=null && response.length()>0){
+                    Gson gson = new Gson();
+                    CategoryModel details = gson.fromJson(response,CategoryModel.class);
+                    final AppListAdapter adapter = new AppListAdapter(MainActivity.this, details.getData(), R.layout.applist_row, new OnClickEvent() {
+                        @Override
+                        public void onClick(int pos) {
+                        }
+                    });
+                    recyclerView.setAdapter(adapter);
+                }
+            }
+        });
+        web.setReqType(true);
+        web.execute(WebService.CATEGORY);
+    }
+
+    @Override
         public boolean onCreateOptionsMenu(Menu menu){
 
             getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -69,23 +91,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void initWidgit() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new AppListAdapter(this, getList(), R.layout.applist_row, new OnClickEvent() {
-            @Override
-            public void onClick(int pos) {
 
-                startActivity(new Intent(MainActivity.this,DetailsActivity.class).putExtra("pos",pos));
-            }
-        }));
     }
 
-    private List<AppListModel> getList() {
-        ArrayList<AppListModel> list = new ArrayList<>();
-        for (int i=0;i<10;i++)
-        {
-            list.add(new AppListModel(""+i,"Application "+i,"http://shirehallmonmouth.org.uk/wp-content/uploads/2017/02/cropped-fb-logo.png"));
-        }
-        return list;
-    }
 
 
 }

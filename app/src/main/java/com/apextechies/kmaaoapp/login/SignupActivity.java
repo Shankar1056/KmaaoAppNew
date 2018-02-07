@@ -1,5 +1,6 @@
 package com.apextechies.kmaaoapp.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -11,10 +12,15 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
+import com.apextechies.kmaaoapp.activity.MainActivity;
+import com.apextechies.kmaaoapp.common.ClsGeneral;
+import com.apextechies.kmaaoapp.common.PreferenceName;
+import com.apextechies.kmaaoapp.model.UserDetails;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
+import com.google.gson.Gson;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -78,7 +84,7 @@ public class SignupActivity extends AppCompatActivity {
             Toast.makeText(SignupActivity.this, "Enter your email", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (Utilz.isValidEmail1(et_email.getText().toString().trim()))
+        if (!Utilz.isValidEmail1(et_email.getText().toString().trim()))
         {
             Toast.makeText(SignupActivity.this, "Enter valid email", Toast.LENGTH_SHORT).show();
             return;
@@ -95,9 +101,13 @@ public class SignupActivity extends AppCompatActivity {
                 progress_bar.setVisibility(View.GONE);
                 if (response != null && response.length() > 0) {
 
+                    Gson gson = new Gson();
+                    UserDetails details = gson.fromJson(response,UserDetails.class);
+                    setUserDetails(details);
                 }
             }
         });
+        nameValuePairs.add(new BasicNameValuePair("user_id", getIntent().getStringExtra("id")));
         nameValuePairs.add(new BasicNameValuePair("device_unique_id", android_id));
         nameValuePairs.add(new BasicNameValuePair("user_name", et_name.getText().toString().trim()));
         nameValuePairs.add(new BasicNameValuePair("user_email", et_email.getText().toString().trim()));
@@ -106,7 +116,21 @@ public class SignupActivity extends AppCompatActivity {
         nameValuePairs.add(new BasicNameValuePair("user_status", ""+true));
         web.setData(nameValuePairs);
         web.setReqType(false);
-        web.execute(WebService.LOGIN);
+        web.execute(WebService.SIGNUP);
+    }
+
+    private void setUserDetails(UserDetails details) {
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_ID, details.getData().get(0).getUser_id());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_NAME, details.getData().get(0).getUser_name());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_EMAIL, details.getData().get(0).getUser_email());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_PHONE, details.getData().get(0).getUser_phone());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_UNIQUE_ID, details.getData().get(0).getDevice_unique_id());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
+
+        startActivity(new Intent(SignupActivity.this,MainActivity.class));
+        finish();
     }
 
 }
