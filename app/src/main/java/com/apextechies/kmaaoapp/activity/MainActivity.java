@@ -1,5 +1,6 @@
 package com.apextechies.kmaaoapp.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +15,7 @@ import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
 import com.apextechies.kmaaoapp.model.CategoryModel;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
+import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
 import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
@@ -42,16 +44,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void callCategoryApi() {
+        Utilz.showProgress(MainActivity.this, getResources().getString(R.string.pleasewait));
         Download_web web = new Download_web(MainActivity.this, new OnTaskCompleted() {
             @Override
             public void onTaskCompleted(String response) {
-
+                Utilz.dismissProgressDialog();
                 if (response!=null && response.length()>0){
                     Gson gson = new Gson();
-                    CategoryModel details = gson.fromJson(response,CategoryModel.class);
+                    final CategoryModel details = gson.fromJson(response,CategoryModel.class);
                     final AppListAdapter adapter = new AppListAdapter(MainActivity.this, details.getData(), R.layout.applist_row, new OnClickEvent() {
                         @Override
                         public void onClick(int pos) {
+                            startActivity(new Intent(MainActivity.this, DetailsActivity.class).
+                                    putExtra("id", details.getData().get(pos).getApplication_id()).
+                                    putExtra("link", details.getData().get(pos).getApplication_play_store_link()).
+                                    putExtra("name", details.getData().get(pos).getApplication_name())
+                            );
                         }
                     });
                     recyclerView.setAdapter(adapter);

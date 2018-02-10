@@ -5,11 +5,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
-import com.apextechies.kmaaoapp.model.DetailsModel;
+import com.apextechies.kmaaoapp.model.DetailsModelData;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ import butterknife.ButterKnife;
 
 public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.MyViewHolder> {
 
-    private List<DetailsModel> subCatListModels;
+    private List<DetailsModelData> subCatListModels;
     private Context context;
     private int categorylist_row;
     private OnClickEvent onClickListener ;
@@ -31,6 +33,10 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.MyViewHo
 
         @BindView(R.id.tv_step)
         TextView tv_step;
+        @BindView(R.id.rules)
+        TextView rules;
+        @BindView(R.id.rulespic)
+        ImageView rulespic;
 
         public MyViewHolder(View view) {
             super(view);
@@ -39,7 +45,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.MyViewHo
     }
 
 
-    public DetailsAdapter(Context context, List<DetailsModel> subCatListModels, int categorylist_row, OnClickEvent onClickListener) {
+    public DetailsAdapter(Context context, List<DetailsModelData> subCatListModels, int categorylist_row, OnClickEvent onClickListener) {
         this.context = context;
         this.subCatListModels = subCatListModels;
         this.categorylist_row = categorylist_row;
@@ -56,8 +62,15 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        final DetailsModel pl = subCatListModels.get(position);
-        holder.tv_step.setText(pl.getId());
+        final DetailsModelData pl = subCatListModels.get(position);
+        holder.tv_step.setText(pl.getStpes());
+        holder.rules.setText(pl.getApplication_rules());
+        if (pl.getRules_image()!=null && pl.getRules_image().length()>0) {
+            Glide.with(context).load(pl.getRules_image()).into(holder.rulespic);
+        }
+        else {
+            holder.rulespic.setVisibility(View.GONE);
+        }
 
 
     }

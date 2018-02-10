@@ -1,22 +1,24 @@
 package com.apextechies.kmaaoapp.model;
 
+import java.util.ArrayList;
+
 /**
  * Created by Shankar on 1/26/2018.
  */
 
 public class DetailsModel {
-    public String getId() {
-        return id;
+    public String getStatus() {
+        return status;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getMsg() {
+        return msg;
     }
 
-    private String id;
-
-    public DetailsModel(String id)
-    {
-        this.id = id;
+    public ArrayList<DetailsModelData> getData() {
+        return data;
     }
+
+    private String status,msg;
+    ArrayList<DetailsModelData> data;
 }
