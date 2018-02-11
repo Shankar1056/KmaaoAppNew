@@ -7,11 +7,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.adapter.AppListAdapter;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
+import com.apextechies.kmaaoapp.common.ClsGeneral;
+import com.apextechies.kmaaoapp.common.PreferenceName;
 import com.apextechies.kmaaoapp.model.CategoryModel;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
@@ -22,6 +24,7 @@ import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.walletamount)
+    TextView walletamount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTaskCompleted(String response) {
                 Utilz.dismissProgressDialog();
-                if (response!=null && response.length()>0){
+                if (response != null && response.length() > 0) {
                     Gson gson = new Gson();
-                    final CategoryModel details = gson.fromJson(response,CategoryModel.class);
+                    final CategoryModel details = gson.fromJson(response, CategoryModel.class);
                     final AppListAdapter adapter = new AppListAdapter(MainActivity.this, details.getData(), R.layout.applist_row, new OnClickEvent() {
                         @Override
                         public void onClick(int pos) {
@@ -71,37 +76,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-        public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-            getMenuInflater().inflate(R.menu.menu_main, menu);
-            return super.onCreateOptionsMenu(menu);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item){
-
-            switch(item.getItemId()){
-                case R.id.menu_item:   //this item has your app icon
-                    return true;
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
 
-
-                default: return super.onOptionsItemSelected(item);
-            }
-        }
-
-        @Override
-        public boolean onPrepareOptionsMenu(Menu menu){
-            menu.findItem(R.id.menu_item).setEnabled(false);
-
-            return super.onPrepareOptionsMenu(menu);
-        }
+    @OnClick(R.id.walletamount)
+    void OnAmountClick() {
+            startActivity(new Intent(MainActivity.this, WalletActivity.class));
+    }
 
     private void initWidgit() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
     }
 
-
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        walletamount.setText("₹" + ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+    }
 }

@@ -37,5 +37,18 @@ public class UserData {
         return user_status;
     }
 
-    private  String user_id,user_name,user_email,user_phone,device_unique_id,device_token,user_created_date,user_status;
+    private  String user_id;
+    private String user_name;
+    private String user_email;
+    private String user_phone;
+    private String device_unique_id;
+    private String device_token;
+    private String user_created_date;
+    private String user_status;
+
+    public String getTotal_amount() {
+        return total_amount;
+    }
+
+    private String total_amount;
 }

@@ -13,4 +13,5 @@ public class PreferenceName {
     public static String DEVICE_TOKEN = "device_token";
     public static String CREATED_DATE = "user_created_date";
     public static String USER_STATUS = "user_status";
+    public static String TOTALAMOUNT = "total_amount";
 }

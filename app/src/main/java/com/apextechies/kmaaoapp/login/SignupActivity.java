@@ -52,6 +52,7 @@ public class SignupActivity extends AppCompatActivity {
     private String android_id = null;
     private Date currentTime;
     private String currentDate = null;
+    private String serverdeviceId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,6 +70,8 @@ public class SignupActivity extends AppCompatActivity {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date = new Date();
         currentDate = formatter.format(date);
+
+        serverdeviceId = getIntent().getStringExtra("serverdeviceId");
 
     }
 
@@ -89,10 +92,15 @@ public class SignupActivity extends AppCompatActivity {
             Toast.makeText(SignupActivity.this, "Enter valid email", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (serverdeviceId.equalsIgnoreCase(android_id)){
+            Toast.makeText(SignupActivity.this, "You cannot signup again with same device", Toast.LENGTH_SHORT).show();
+            return;
+        }
         callSignupApi();
     }
 
     private void callSignupApi() {
+
         ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
         progress_bar.setVisibility(View.VISIBLE);
         Download_web web = new Download_web(SignupActivity.this, new OnTaskCompleted() {
@@ -114,6 +122,8 @@ public class SignupActivity extends AppCompatActivity {
         nameValuePairs.add(new BasicNameValuePair("device_token", ""));
         nameValuePairs.add(new BasicNameValuePair("user_created_date", currentDate));
         nameValuePairs.add(new BasicNameValuePair("user_status", ""+true));
+        nameValuePairs.add(new BasicNameValuePair("amount", "20"));
+        nameValuePairs.add(new BasicNameValuePair("user_created_time", Utilz.getCurrentTime(SignupActivity.this)));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SIGNUP);
@@ -128,7 +138,8 @@ public class SignupActivity extends AppCompatActivity {
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
-
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT, details.getData().get(0).getTotal_amount());
         startActivity(new Intent(SignupActivity.this,MainActivity.class));
         finish();
     }

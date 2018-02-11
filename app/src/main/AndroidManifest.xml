@@ -34,6 +34,9 @@
         <activity
             android:name=".login.SignupActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".activity.WalletActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <meta-data
             xmlns:tools="http://schemas.android.com/tools"
             android:name="io.fabric.ApiKey"

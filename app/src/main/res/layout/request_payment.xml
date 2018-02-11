@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/paytmNumber"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_50"
+        android:layout_margin="@dimen/margin_10"
+        android:hint="@string/paytmnumber"
+        android:paddingLeft="@dimen/margin_10"
+        android:textSize="14sp"
+        android:maxLength="10"
+        android:inputType="number"
+        android:background="@drawable/rounded_corner_color"/>
+    <EditText
+        android:id="@+id/amount"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/height_50"
+        android:layout_margin="@dimen/margin_10"
+        android:hint="@string/textamount"
+        android:paddingLeft="@dimen/margin_10"
+        android:textSize="14sp"
+        android:inputType="number"
+        android:background="@drawable/rounded_corner_color"/>
+
+    <Button
+        android:id="@+id/request"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_20"
+        android:background="@color/colorPrimary"
+        android:textSize="15sp"
+        android:textColor="@color/white_color"
+        android:text="Request"/>
+
+</LinearLayout>

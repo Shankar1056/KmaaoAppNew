@@ -13,4 +13,6 @@ public class WebService {
     public static String APPRULES = BASE_URL+"get_applicationRules";
     public static String WALLET = BASE_URL+"get_wallet";
     public static String WALLEHTISTORY = BASE_URL+"get_wallethistory";
+    public static String DEVICEID = BASE_URL+"get_deviceId";
+    public static String REQUESTAMOUNT = BASE_URL+"get_requestAmount";
 }

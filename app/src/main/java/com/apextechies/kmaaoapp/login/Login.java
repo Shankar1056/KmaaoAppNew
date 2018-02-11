@@ -2,6 +2,7 @@ package com.apextechies.kmaaoapp.login;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,8 @@ import com.google.gson.Gson;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,14 +49,23 @@ public class Login extends AppCompatActivity {
     public static final int RC_SIGN_IN = 111;
     @BindView(R.id.progress_bar)
     ProgressBar progress_bar;
+    private String android_id = null;
+    private String serverdeviceId = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+        getDeviceId();
         holdScreenForSOmeTime();
     }
+
+    private void getDeviceId() {
+        android_id = Settings.Secure.getString(Login.this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+    }
+
     private void holdScreenForSOmeTime() {
         Thread timer= new Thread()
         {
@@ -71,12 +83,38 @@ public class Login extends AppCompatActivity {
                 }
                 finally
                 {
+                    checkDeviceId();
                     checkSession();
                 }
             }
         };
         timer.start();
     }
+
+    private void checkDeviceId() {
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+        Download_web web = new Download_web(Login.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+                if (response!=null && response.length()>0){
+
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        serverdeviceId = object.getJSONArray("data").getJSONObject(0).optString("device_unique_id");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("device_unique_id",android_id));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.DEVICEID);
+    }
+
     private void checkSession() {
         AuthMigrator.getInstance().migrate(true).addOnSuccessListener(this,
                 new OnSuccessListener() {
@@ -166,10 +204,13 @@ public class Login extends AppCompatActivity {
         ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
         ClsGeneral.setPreferences(Login.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
         ClsGeneral.setPreferences(Login.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
+        ClsGeneral.setPreferences(Login.this, PreferenceName.TOTALAMOUNT, details.getData().get(0).getTotal_amount());
         if (details.getStatus().equalsIgnoreCase("true")){
             if (details.getData().get(0).getUser_email().equalsIgnoreCase("")){
                 startActivity(new Intent(Login.this,SignupActivity.class).
-                        putExtra("id",details.getData().get(0).getUser_id()));
+                        putExtra("id",details.getData().get(0).getUser_id()).
+                        putExtra("serverdeviceId",serverdeviceId)
+                );
                 finish();
             }else if (details.getData().get(0).getDevice_unique_id().equalsIgnoreCase("")){
                 Toast.makeText(Login.this, "Contact Admin", Toast.LENGTH_SHORT).show();
