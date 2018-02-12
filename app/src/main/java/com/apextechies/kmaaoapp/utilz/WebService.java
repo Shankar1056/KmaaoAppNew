@@ -15,4 +15,5 @@ public class WebService {
     public static String WALLEHTISTORY = BASE_URL+"get_wallethistory";
     public static String DEVICEID = BASE_URL+"get_deviceId";
     public static String REQUESTAMOUNT = BASE_URL+"get_requestAmount";
+    public static String SETWALLETAMOUNT = BASE_URL+"set_walletAmount";
 }

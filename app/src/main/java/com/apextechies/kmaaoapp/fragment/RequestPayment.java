@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
+import com.apextechies.kmaaoapp.activity.WalletActivity;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
 import com.apextechies.kmaaoapp.utilz.Download_web;
@@ -36,6 +37,7 @@ public class RequestPayment extends Fragment {
    private EditText paytmNumber;
     private  EditText amount;
     private Button request;
+    private int wallet;
 
     public RequestPayment(String s) {
 
@@ -51,6 +53,7 @@ public class RequestPayment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+       wallet =  Integer.parseInt(ClsGeneral.getPreferences(getActivity(), PreferenceName.TOTALAMOUNT));
         paytmNumber = (EditText)view.findViewById(R.id.paytmNumber);
         amount = (EditText)view.findViewById(R.id.amount);
         request = (Button)view.findViewById(R.id.request);
@@ -58,6 +61,7 @@ public class RequestPayment extends Fragment {
         request.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int requestedamount = Integer.parseInt(amount.getText().toString());
                 if (paytmNumber.getText().toString().trim().equalsIgnoreCase("")){
                     Toast.makeText(getActivity(), "Enter your Paytm Number", Toast.LENGTH_SHORT).show();
                     return;
@@ -66,8 +70,14 @@ public class RequestPayment extends Fragment {
                     Toast.makeText(getActivity(), "amount", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if (requestedamount>=wallet){
+                    Toast.makeText(getActivity(), "You are requesting an invalid amount", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 else {
-                    callRequestApi();
+                    
+                    int walletAmount = wallet-requestedamount;
+                    callRequestApi(walletAmount);
                 }
             }
         });
@@ -76,7 +86,7 @@ public class RequestPayment extends Fragment {
 
 
 
-    private void callRequestApi() {
+    private void callRequestApi(final int walletAmount) {
         String time = Utilz.getCurrentTime(getActivity());
         String date = Utilz.getCurrentDateInDigit(getActivity());
         ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
@@ -90,7 +100,11 @@ public class RequestPayment extends Fragment {
                     try {
                         JSONObject object = new JSONObject(response);
                         if (object.optString("status").equalsIgnoreCase("true")){
+                            paytmNumber.setText("");
+                            amount.setText("");
                             Toast.makeText(getActivity(), ""+object.optString("data"), Toast.LENGTH_SHORT).show();
+                            ClsGeneral.setPreferences(getActivity(), PreferenceName.TOTALAMOUNT, ""+walletAmount);
+                            ((WalletActivity) getActivity()).setwalletAmount(""+walletAmount);
                         }else {
                             Toast.makeText(getActivity(), ""+object.optString("msg"), Toast.LENGTH_SHORT).show();
 
@@ -105,6 +119,7 @@ public class RequestPayment extends Fragment {
         nameValuePairs.add(new BasicNameValuePair("number",paytmNumber.getText().toString()));
         nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(getActivity(), PreferenceName.USER_ID)));
         nameValuePairs.add(new BasicNameValuePair("requested_amount", amount.getText().toString()));
+        nameValuePairs.add(new BasicNameValuePair("wallet_amount", ""+walletAmount));
         nameValuePairs.add(new BasicNameValuePair("requested_date", date));
         nameValuePairs.add(new BasicNameValuePair("requested_time", time));
         web.setReqType(false);

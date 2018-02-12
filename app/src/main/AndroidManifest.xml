@@ -43,6 +43,8 @@
             android:value="185cd65e35579c876af0ada8ca5fcc40ac8cded2"
             tools:replace="android:value"/>
 
+
+        <service android:name=".activity.MyService"></service>
     </application>
 
 </manifest>

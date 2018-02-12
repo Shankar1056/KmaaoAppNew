@@ -12,8 +12,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.apextechies.kmaaoapp.R;
+import com.apextechies.kmaaoapp.common.ClsGeneral;
+import com.apextechies.kmaaoapp.common.PreferenceName;
 import com.apextechies.kmaaoapp.fragment.PaymentTransaction;
 import com.apextechies.kmaaoapp.fragment.RequestPayment;
 
@@ -34,6 +37,8 @@ public class WalletActivity extends AppCompatActivity {
     TabLayout tabLayout;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    @BindView(R.id.wallet)
+    TextView wallet;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -125,4 +130,16 @@ public class WalletActivity extends AppCompatActivity {
         }
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setwalletAmount(ClsGeneral.getPreferences(WalletActivity.this, PreferenceName.TOTALAMOUNT));
+
+    }
+
+    public void setwalletAmount(String amount) {
+        wallet.setText("Wallet ₹"+amount);
+    }
+
 }

@@ -12,7 +12,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="About App Rule"
+        android:text="नमस्ते,
+विज्ञापनों की ही बदौलत हम आपको इतना सारा कंटेंट नि:शुल्क मुहैया करा पाते हैं। दुनिया के नं 1 हिंदी न्यूज चैनल और भारत की सबसे विश्वसनीय खबरों को पढ़ने के लिए हमें एड-ब्लॉकर में व्हाइटलिस्ट कर दीजिए और सबसे तेज खबरें पढ़ते रहिए।"
         android:layout_margin="@dimen/height_5"/>
 
     <android.support.v7.widget.RecyclerView
