@@ -22,16 +22,17 @@ import com.apextechies.kmaaoapp.adapter.DetailsAdapter;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
-import com.apextechies.kmaaoapp.model.DetailsModel;
 import com.apextechies.kmaaoapp.model.DetailsModelData;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
-import com.google.gson.Gson;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -87,15 +88,27 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
             public void onTaskCompleted(String response) {
                 Utilz.dismissProgressDialog();
                 if (response != null && response.length() > 0) {
-                    Gson gson = new Gson();
-                    final DetailsModel details = gson.fromJson(response, DetailsModel.class);
-                    detailsModelData = details.getData();
-                    recyclerView.setAdapter(new DetailsAdapter(DetailsActivity.this, detailsModelData, R.layout.appdetails_row, new OnClickEvent() {
-                        @Override
-                        public void onClick(int pos) {
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            JSONArray array = object.getJSONArray("data");
+                            for (int i=0; i<array.length(); i++){
+                                JSONObject jo = array.getJSONObject(i);
+                                detailsModelData.add(new DetailsModelData(jo.optString("application_rules_id"),jo.optString("application_id"),
+                                        jo.optString("application_rules"),jo.optString("stpes"), jo.optString("rules_image"),
+                                        jo.optString("application_status")));
+                            }
+                            recyclerView.setAdapter(new DetailsAdapter(DetailsActivity.this, detailsModelData, R.layout.appdetails_row, new OnClickEvent() {
+                                @Override
+                                public void onClick(int pos) {
 
+                                }
+                            }));
                         }
-                    }));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             }
         });

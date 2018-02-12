@@ -21,13 +21,18 @@ import com.apextechies.kmaaoapp.adapter.AppListAdapter;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
-import com.apextechies.kmaaoapp.model.CategoryModel;
+import com.apextechies.kmaaoapp.model.CategoryDateModel;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
 import com.crashlytics.android.Crashlytics;
-import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     TextView walletamount;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawer_layout;
-
+    private ArrayList<CategoryDateModel> categoryDateModels = new ArrayList<>();
 
 
     @Override
@@ -62,9 +67,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void navigationMappin() {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        View hView =  navigationView.getHeaderView(0);
-        TextView nav_user = (TextView)hView.findViewById(R.id.userName);
-        TextView userEmail = (TextView)hView.findViewById(R.id.userEmail);
+        View hView = navigationView.getHeaderView(0);
+        TextView nav_user = (TextView) hView.findViewById(R.id.userName);
+        TextView userEmail = (TextView) hView.findViewById(R.id.userEmail);
         nav_user.setText(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.USER_NAME));
         userEmail.setText(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.USER_EMAIL));
         if (navigationView != null) {
@@ -79,19 +84,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onTaskCompleted(String response) {
                 Utilz.dismissProgressDialog();
                 if (response != null && response.length() > 0) {
-                    Gson gson = new Gson();
-                    final CategoryModel details = gson.fromJson(response, CategoryModel.class);
-                    final AppListAdapter adapter = new AppListAdapter(MainActivity.this, details.getData(), R.layout.applist_row, new OnClickEvent() {
-                        @Override
-                        public void onClick(int pos) {
-                            startActivity(new Intent(MainActivity.this, DetailsActivity.class).
-                                    putExtra("id", details.getData().get(pos).getApplication_id()).
-                                    putExtra("link", details.getData().get(pos).getApplication_play_store_link()).
-                                    putExtra("name", details.getData().get(pos).getApplication_name())
-                            );
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            JSONArray array = object.getJSONArray("data");
+                            for (int i=0; i<array.length(); i++) {
+                                JSONObject jo = array.getJSONObject(i);
+                                categoryDateModels.add(new CategoryDateModel(jo.optString("application_id"),jo.optString("application_name"),
+                                        jo.optString("application_play_store_link"),jo.optString("application_price"), jo.optString("application_status"),
+                                        jo.optString("created_date"),jo.optString("created_time"),jo.optString("expiry_date"),
+                                        jo.optString("expiry_time") ));
+                            }
+                            final AppListAdapter adapter = new AppListAdapter(MainActivity.this, categoryDateModels, R.layout.applist_row, new OnClickEvent() {
+                                @Override
+                                public void onClick(int pos) {
+                                    startActivity(new Intent(MainActivity.this, DetailsActivity.class).
+                                            putExtra("id", categoryDateModels.get(pos).getApplication_id()).
+                                            putExtra("link", categoryDateModels.get(pos).getApplication_play_store_link()).
+                                            putExtra("name", categoryDateModels.get(pos).getApplication_name())
+                                    );
+                                }
+                            });
+                            recyclerView.setAdapter(adapter);
                         }
-                    });
-                    recyclerView.setAdapter(adapter);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             }
         });
@@ -109,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @OnClick(R.id.walletamount)
     void OnAmountClick() {
-            startActivity(new Intent(MainActivity.this, WalletActivity.class));
+        startActivity(new Intent(MainActivity.this, WalletActivity.class));
     }
 
     private void initWidgit() {
@@ -152,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId()==R.id.share){
+        if (item.getItemId() == R.id.share) {
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND);
             sendIntent.putExtra(Intent.EXTRA_TEXT,

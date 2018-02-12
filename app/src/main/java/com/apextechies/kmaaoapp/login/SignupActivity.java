@@ -15,15 +15,16 @@ import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.activity.MainActivity;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
-import com.apextechies.kmaaoapp.model.UserDetails;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
-import com.google.gson.Gson;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -109,9 +110,15 @@ public class SignupActivity extends AppCompatActivity {
                 progress_bar.setVisibility(View.GONE);
                 if (response != null && response.length() > 0) {
 
-                    Gson gson = new Gson();
-                    UserDetails details = gson.fromJson(response,UserDetails.class);
-                    setUserDetails(details);
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            JSONArray array = object.getJSONArray("data");
+                            setUserDetails(array.getJSONObject(0));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -129,17 +136,16 @@ public class SignupActivity extends AppCompatActivity {
         web.execute(WebService.SIGNUP);
     }
 
-    private void setUserDetails(UserDetails details) {
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_ID, details.getData().get(0).getUser_id());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_NAME, details.getData().get(0).getUser_name());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_EMAIL, details.getData().get(0).getUser_email());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_PHONE, details.getData().get(0).getUser_phone());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_UNIQUE_ID, details.getData().get(0).getDevice_unique_id());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
-        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT, details.getData().get(0).getTotal_amount());
+    private void setUserDetails(JSONObject details) {
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_ID, details.optString("user_id"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_NAME, details.optString("user_name"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_EMAIL, details.optString("user_email"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_PHONE, details.optString("user_phone"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_UNIQUE_ID, details.optString("device_unique_id"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.DEVICE_TOKEN, details.optString("device_token"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.CREATED_DATE, details.optString("user_created_date"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.optString("user_status"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT, details.optString("total_amount"));
         startActivity(new Intent(SignupActivity.this,MainActivity.class));
         finish();
     }

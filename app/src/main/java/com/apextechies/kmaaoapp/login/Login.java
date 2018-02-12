@@ -15,7 +15,6 @@ import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.activity.MainActivity;
 import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
-import com.apextechies.kmaaoapp.model.UserDetails;
 import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.WebService;
@@ -28,10 +27,10 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.gson.Gson;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -182,9 +181,16 @@ public class Login extends AppCompatActivity {
                 progress_bar.setVisibility(View.GONE);
                 if (response != null && response.length() > 0) {
 
-                    Gson gson = new Gson();
-                    UserDetails details = gson.fromJson(response,UserDetails.class);
-                    setUserDetails(details);
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            JSONArray array = object.getJSONArray("data");
+                            setUserDetails(array.getJSONObject(0));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
                 }
             }
         });
@@ -195,24 +201,24 @@ public class Login extends AppCompatActivity {
 
     }
 
-    private void setUserDetails(UserDetails details) {
-        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_ID, details.getData().get(0).getUser_id());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_NAME, details.getData().get(0).getUser_name());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_EMAIL, details.getData().get(0).getUser_email());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_PHONE, details.getData().get(0).getUser_phone());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_UNIQUE_ID, details.getData().get(0).getDevice_unique_id());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_TOKEN, details.getData().get(0).getDevice_token());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.CREATED_DATE, details.getData().get(0).getUser_created_date());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_STATUS, details.getData().get(0).getUser_status());
-        ClsGeneral.setPreferences(Login.this, PreferenceName.TOTALAMOUNT, details.getData().get(0).getTotal_amount());
-        if (details.getStatus().equalsIgnoreCase("true")){
-            if (details.getData().get(0).getUser_email().equalsIgnoreCase("")){
+    private void setUserDetails(JSONObject details) {
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_ID, details.optString("user_id"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_NAME, details.optString("user_name"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_EMAIL, details.optString("user_email"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_PHONE, details.optString("user_phone"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_UNIQUE_ID, details.optString("device_unique_id"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.DEVICE_TOKEN, details.optString("device_token"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.CREATED_DATE, details.optString("user_created_date"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.USER_STATUS, details.optString("user_status"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.TOTALAMOUNT, details.optString("total_amount"));
+        if (details.optString("user_status").equalsIgnoreCase("true")){
+            if (details.optString("user_email").equalsIgnoreCase("")){
                 startActivity(new Intent(Login.this,SignupActivity.class).
-                        putExtra("id",details.getData().get(0).getUser_id()).
+                        putExtra("id", details.optString("user_id")).
                         putExtra("serverdeviceId",serverdeviceId)
                 );
                 finish();
-            }else if (details.getData().get(0).getDevice_unique_id().equalsIgnoreCase("")){
+            }else if (details.optString("device_unique_id").equalsIgnoreCase("")){
                 Toast.makeText(Login.this, "Contact Admin", Toast.LENGTH_SHORT).show();
                 return;
             }else {
