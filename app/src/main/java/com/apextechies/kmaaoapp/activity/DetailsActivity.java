@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by Shankar on 1/26/2018.
@@ -62,6 +64,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
     int hours;
     MyService myService;
     private int count = 0;
+    private static final int toasttime = 10;
 
 
     private ArrayList<DetailsModelData> detailsModelData = new ArrayList<>();
@@ -79,6 +82,12 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
             callRelesApi();
         }
     }
+    @OnClick(R.id.wallet)
+    void OnAmountClick()
+    {
+        startActivity(new Intent(DetailsActivity.this, WalletActivity.class));
+    }
+
 
     private void callRelesApi() {
         Utilz.showProgress(DetailsActivity.this, getResources().getString(R.string.pleasewait));
@@ -168,21 +177,19 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         @Override
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
-            Toast.makeText(DetailsActivity.this, "onServiceConnected called", Toast.LENGTH_SHORT).show();
             // We've binded to LocalService, cast the IBinder and get LocalService instance
             MyService.LocalBinder binder = (MyService.LocalBinder) service;
             myService = binder.getServiceInstance(); //Get instance of your service!
             myService.registerClient(DetailsActivity.this); //Activity register in the service as client for callabcks!
 
-            Toast.makeText(myService, "Connected to service...", Toast.LENGTH_SHORT).show();
 
             myService.startCounter();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            Toast.makeText(DetailsActivity.this, "onServiceDisconnected called", Toast.LENGTH_SHORT).show();
-            Toast.makeText(myService, "Service disconnected", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(DetailsActivity.this, "onServiceDisconnected called", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(myService, "Service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -196,6 +203,16 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
 
         //   tvServiceOutput.setText((hours>0 ? String.format("%d:", hours) : "") + ((this.minutes<10 && this.hours > 0)? "0" + String.format("%d:", minutes) :  String.format("%d:", minutes)) + (this.seconds<10 ? "0" + this.seconds: this.seconds));
         Log.e("TTTTTTTTTTTTT", "" + millis);
+        final Toast toast = Toast.makeText(getApplicationContext(), ""+millis, Toast.LENGTH_SHORT);
+        toast.show();
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                toast.cancel();
+            }
+        }, 50);
         count++;
 
     }
@@ -205,18 +222,22 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         super.onResume();
         int requestedamount = Integer.parseInt("10");
 
-        if (count > 3) {
-            unbindService(mConnection);
-            stopService(serviceIntent);
-            myService.stopCounter();
-            stopService(new Intent(getBaseContext(), MyService.class));
-        }
+       try {
+           unbindService(mConnection);
+           stopService(serviceIntent);
+           myService.stopCounter();
+           stopService(new Intent(getBaseContext(), MyService.class));
+       }
+       catch (Exception e){
+
+       }
+
         if (count >= 30) {
-            Toast.makeText(myService, "You stayed" + count + "Seconds", Toast.LENGTH_SHORT).show();
-            if (totalwallet>=requestedamount) {
+           // Toast.makeText(myService, "You stayed" + count + "Seconds", Toast.LENGTH_SHORT).show();
+
                 if (Utilz.isInternetConnected(DetailsActivity.this)) {
                     updateWalletApi(totalwallet, requestedamount);
-                }
+
             }
         }
 
@@ -239,7 +260,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
             }
         });
         nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.USER_ID)));
-        nameValuePairs.add(new BasicNameValuePair("amount", ""+(totalwallet+10)));
+        nameValuePairs.add(new BasicNameValuePair("amount", ""+(totalwallet+requestedamount)));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SETWALLETAMOUNT);

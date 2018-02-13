@@ -23,25 +23,30 @@ public class MyService extends Service {
     Handler handler = new Handler();
     Runnable serviceRunnable;
     int count = 0;
+     Handler handler1;
+    final int delay = 1000; //milliseconds
+    boolean stop = false;
+
 
 
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, final int startId) {
         serviceRunnable = new Runnable() {
             @Override
             public void run() {
+                handler1 = new Handler();
                 /*millis = System.currentTimeMillis() - startTime;
                 activity.updateClient(millis); //Update Activity (client) by the implementd callback
                 handler.postDelayed(this, 1000);
 */
-                final Handler handler1 = new Handler();
-                final int delay = 1000; //milliseconds
+
 
                 handler1.postDelayed(new Runnable() {
                     public void run() {
                         count++;
                         activity.updateClient(count);
+
                         handler1.postDelayed(this, 1000);
                     }
                 }, delay);
@@ -50,7 +55,8 @@ public class MyService extends Service {
             }
         };
         //Do what you need in onStartCommand when service has been started
-        return START_NOT_STICKY;
+//        return START_NOT_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -68,6 +74,8 @@ public class MyService extends Service {
     //Here Activity register to the service as Callbacks client
     public void registerClient(Activity activity) {
         this.activity = (Callbacks) activity;
+        count = 0;
+        handler.removeCallbacks(serviceRunnable);
     }
 
     public void startCounter() {
@@ -78,6 +86,7 @@ public class MyService extends Service {
 
     public void stopCounter() {
         handler.removeCallbacks(serviceRunnable);
+        handler.removeCallbacksAndMessages(0);
     }
 
 
@@ -89,6 +98,6 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopSelf();
+
     }
 }

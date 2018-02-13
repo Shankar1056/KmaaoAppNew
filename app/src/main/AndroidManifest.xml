@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".login.Login"
+            android:name=".activity.MyServiceAnoter"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -45,6 +45,7 @@
 
 
         <service android:name=".activity.MyService"></service>
+        <service android:name=".activity.MyServiceAnoter$TimerService"></service>
     </application>
 
 </manifest>

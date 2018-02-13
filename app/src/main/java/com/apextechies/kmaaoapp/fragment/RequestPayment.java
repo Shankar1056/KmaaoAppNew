@@ -70,7 +70,7 @@ public class RequestPayment extends Fragment {
                     Toast.makeText(getActivity(), "amount", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (requestedamount<=wallet){
+                if (wallet<requestedamount){
                     Toast.makeText(getActivity(), "You are requesting an invalid amount", Toast.LENGTH_SHORT).show();
                     return;
                 }

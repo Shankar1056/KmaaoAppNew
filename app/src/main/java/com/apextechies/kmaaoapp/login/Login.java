@@ -192,6 +192,9 @@ public class Login extends AppCompatActivity {
                     }
 
                 }
+                else {
+                    progress_bar.setVisibility(View.GONE);
+                }
             }
         });
         nameValuePairs.add(new BasicNameValuePair("mobile", number));
