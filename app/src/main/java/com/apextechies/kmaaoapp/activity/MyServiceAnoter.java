@@ -1,17 +1,12 @@
 package com.apextechies.kmaaoapp.activity;
 
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -28,19 +23,14 @@ import java.lang.ref.WeakReference;
 
 public class MyServiceAnoter  extends AppCompatActivity {
 
-    private static final String TAG = MyServiceAnoter.class.getSimpleName();
-
+    public static final String TAG = MyServiceAnoter.class.getSimpleName();
     private TimerService timerService;
     private boolean serviceBound;
-
     private Button timerButton;
     private TextView timerTextView;
-
-    // Handler to update the UI every second when the timer is running
     private final Handler mUpdateTimeHandler = new UIUpdateHandler(this);
-
     // Message type for the handler
-    private final static int MSG_UPDATE_TIME = 0;
+    public final static int MSG_UPDATE_TIME = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +105,7 @@ public class MyServiceAnoter  extends AppCompatActivity {
     /**
      * Updates the timer readout in the UI; the service must be bound
      */
-    private void updateUITimer() {
+    public void updateUITimer() {
         if (serviceBound) {
             timerTextView.setText(timerService.elapsedTime() + " seconds");
         }
@@ -180,7 +170,7 @@ public class MyServiceAnoter  extends AppCompatActivity {
      * Timer service tracks the start and end time of timer; service can be placed into the
      * foreground to prevent it being killed when the activity goes away
      */
-    public static class TimerService extends Service {
+   /* public static class TimerService extends Service {
 
         private static final String TAG = TimerService.class.getSimpleName();
 
@@ -236,9 +226,9 @@ public class MyServiceAnoter  extends AppCompatActivity {
             }
         }
 
-        /**
+        *//**
          * Starts the timer
-         */
+         *//*
         public void startTimer() {
             if (!isTimerRunning) {
                 startTime = System.currentTimeMillis();
@@ -249,9 +239,9 @@ public class MyServiceAnoter  extends AppCompatActivity {
             }
         }
 
-        /**
+        *//**
          * Stops the timer
-         */
+         *//*
         public void stopTimer() {
             if (isTimerRunning) {
                 endTime = System.currentTimeMillis();
@@ -262,18 +252,18 @@ public class MyServiceAnoter  extends AppCompatActivity {
             }
         }
 
-        /**
+        *//**
          * @return whether the timer is running
-         */
+         *//*
         public boolean isTimerRunning() {
             return isTimerRunning;
         }
 
-        /**
+        *//**
          * Returns the  elapsed time
          *
          * @return the elapsed time in seconds
-         */
+         *//*
         public long elapsedTime() {
             // If the timer is running, the end time will be zero
             return endTime > startTime ?
@@ -281,25 +271,25 @@ public class MyServiceAnoter  extends AppCompatActivity {
                     (System.currentTimeMillis() - startTime) / 1000;
         }
 
-        /**
+        *//**
          * Place the service into the foreground
-         */
+         *//*
         public void foreground() {
             startForeground(NOTIFICATION_ID, createNotification());
         }
 
-        /**
+        *//**
          * Return the service to the background
-         */
+         *//*
         public void background() {
             stopForeground(true);
         }
 
-        /**
+        *//**
          * Creates a notification for placing the service into the foreground
          *
          * @return a notification for interacting with the service when in the foreground
-         */
+         *//*
         private Notification createNotification() {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                     .setContentTitle("Timer Active")
@@ -314,6 +304,6 @@ public class MyServiceAnoter  extends AppCompatActivity {
 
             return builder.build();
         }
-    }
+    }*/
 
 }

@@ -1,13 +1,13 @@
 package com.apextechies.kmaaoapp.activity;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.adapter.DetailsAdapter;
@@ -35,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -55,16 +55,17 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
     TextView install_appname;
     @BindView(R.id.wallet)
     TextView wallet;
-    private  int totalwallet;
+    private int totalwallet;
 
-    //Service
-    Intent serviceIntent;
-    int seconds;
-    int minutes;
-    int hours;
-    MyService myService;
+    public static final String TAG = MyServiceAnoter.class.getSimpleName();
+    private TimerService timerService;
+    private boolean serviceBound;
+    private TextView timerTextView;
+    private final Handler mUpdateTimeHandler = new UIUpdateHandler(this);
+    // Message type for the handler
+    public final static int MSG_UPDATE_TIME = 0;
     private int count = 0;
-    private static final int toasttime = 10;
+    private boolean isOnresume = false;
 
 
     private ArrayList<DetailsModelData> detailsModelData = new ArrayList<>();
@@ -82,12 +83,39 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
             callRelesApi();
         }
     }
+
     @OnClick(R.id.wallet)
-    void OnAmountClick()
-    {
+    void OnAmountClick() {
         startActivity(new Intent(DetailsActivity.this, WalletActivity.class));
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (Log.isLoggable(TAG, Log.VERBOSE)) {
+            Log.v(TAG, "Starting and binding service");
+        }
+        Intent i = new Intent(this, TimerService.class);
+        startService(i);
+        bindService(i, mConnection, 0);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        updateUIStopRun();
+        if (serviceBound) {
+            // If a timer is active, foreground the service, otherwise kill the service
+            if (timerService.isTimerRunning()) {
+                timerService.foreground();
+            } else {
+                stopService(new Intent(this, TimerService.class));
+            }
+            // Unbind the service
+            unbindService(mConnection);
+            serviceBound = false;
+        }
+    }
 
     private void callRelesApi() {
         Utilz.showProgress(DetailsActivity.this, getResources().getString(R.string.pleasewait));
@@ -99,12 +127,12 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
                 if (response != null && response.length() > 0) {
                     try {
                         JSONObject object = new JSONObject(response);
-                        if (object.optString("status").equalsIgnoreCase("true")){
+                        if (object.optString("status").equalsIgnoreCase("true")) {
                             JSONArray array = object.getJSONArray("data");
-                            for (int i=0; i<array.length(); i++){
+                            for (int i = 0; i < array.length(); i++) {
                                 JSONObject jo = array.getJSONObject(i);
-                                detailsModelData.add(new DetailsModelData(jo.optString("application_rules_id"),jo.optString("application_id"),
-                                        jo.optString("application_rules"),jo.optString("stpes"), jo.optString("rules_image"),
+                                detailsModelData.add(new DetailsModelData(jo.optString("application_rules_id"), jo.optString("application_id"),
+                                        jo.optString("application_rules"), jo.optString("stpes"), jo.optString("rules_image"),
                                         jo.optString("application_status")));
                             }
                             recyclerView.setAdapter(new DetailsAdapter(DetailsActivity.this, detailsModelData, R.layout.appdetails_row, new OnClickEvent() {
@@ -132,8 +160,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         toolbar.setTitle(getIntent().getStringExtra("name"));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        serviceIntent = new Intent(DetailsActivity.this, MyService.class);
+        timerTextView = (TextView) findViewById(R.id.timer_text_view);
 
         install_appname.setText("Install " + getIntent().getStringExtra("name"));
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -146,27 +173,37 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         install_appname.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 try {
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getIntent().getStringExtra("link")));
                     startActivity(intent);
-                    startService(serviceIntent); //Starting the service
-                    bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
-                    //   myService.startCounter();
+                    if (serviceBound && timerService.isTimerRunning()) {
+                        if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                            Log.v(TAG, "Stopping timer");
+                        }
+                        timerService.stopTimer();
+                        updateUIStopRun();
+                    }
+                    if (serviceBound && !timerService.isTimerRunning()) {
+                        if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                            Log.v(TAG, "Starting timer");
+                        }
+                        timerService.startTimer();
+                        updateUIStartRun();
+                    }
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                isOnresume = true;
             }
         });
         try {
             totalwallet = Integer.parseInt(ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT));
-        }catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             totalwallet = 0;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
 
         }
     }
@@ -175,76 +212,46 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've binded to LocalService, cast the IBinder and get LocalService instance
-            MyService.LocalBinder binder = (MyService.LocalBinder) service;
-            myService = binder.getServiceInstance(); //Get instance of your service!
-            myService.registerClient(DetailsActivity.this); //Activity register in the service as client for callabcks!
-
-
-            myService.startCounter();
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Service bound");
+            }
+            TimerService.RunServiceBinder binder = (TimerService.RunServiceBinder) service;
+            timerService = binder.getService();
+            serviceBound = true;
+            // Ensure the service is not in the foreground when bound
+            timerService.background();
+            // Update the UI if the service is already running the timer
+            if (timerService.isTimerRunning()) {
+                updateUIStartRun();
+            }
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-//            Toast.makeText(DetailsActivity.this, "onServiceDisconnected called", Toast.LENGTH_SHORT).show();
-//            Toast.makeText(myService, "Service disconnected", Toast.LENGTH_SHORT).show();
+        public void onServiceDisconnected(ComponentName name) {
+            if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Service disconnect");
+            }
+            serviceBound = false;
         }
     };
-
 
     @Override
     public void updateClient(long millis) {
 
-        seconds = (int) (millis / 1000) % 60;
-        minutes = (int) ((millis / (1000 * 60)) % 60);
-        hours = (int) ((millis / (1000 * 60 * 60)) % 24);
-
-        //   tvServiceOutput.setText((hours>0 ? String.format("%d:", hours) : "") + ((this.minutes<10 && this.hours > 0)? "0" + String.format("%d:", minutes) :  String.format("%d:", minutes)) + (this.seconds<10 ? "0" + this.seconds: this.seconds));
-        Log.e("TTTTTTTTTTTTT", "" + millis);
-        final Toast toast = Toast.makeText(getApplicationContext(), ""+millis, Toast.LENGTH_SHORT);
-        toast.show();
-
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                toast.cancel();
-            }
-        }, 50);
-        count++;
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        int requestedamount = Integer.parseInt("10");
 
-       try {
-           unbindService(mConnection);
-           stopService(serviceIntent);
-           myService.stopCounter();
-           stopService(new Intent(getBaseContext(), MyService.class));
-       }
-       catch (Exception e){
 
-       }
-
-        if (count >= 30) {
-           // Toast.makeText(myService, "You stayed" + count + "Seconds", Toast.LENGTH_SHORT).show();
-
-                if (Utilz.isInternetConnected(DetailsActivity.this)) {
-                    updateWalletApi(totalwallet, requestedamount);
-
-            }
-        }
-
-            setwalletAmount(ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT));
+        setwalletAmount(ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT));
     }
+
     public void setwalletAmount(String amount) {
-        wallet.setText("Wallet ₹"+amount);
+        wallet.setText("Wallet ₹" + amount);
     }
 
     private void updateWalletApi(final int wallet, final int requestedamount) {
@@ -254,15 +261,71 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
             public void onTaskCompleted(String response) {
 
                 if (response != null && response.length() > 0) {
-                    ClsGeneral.setPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT, ""+(wallet+requestedamount));
+                    ClsGeneral.setPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT, "" + (wallet + requestedamount));
                     setwalletAmount(ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.TOTALAMOUNT));
                 }
             }
         });
         nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.USER_ID)));
-        nameValuePairs.add(new BasicNameValuePair("amount", ""+(totalwallet+requestedamount)));
+        nameValuePairs.add(new BasicNameValuePair("amount", "" + (totalwallet + requestedamount)));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SETWALLETAMOUNT);
+    }
+
+    public void updateUITimer() {
+        int requestedamount = Integer.parseInt("10");
+        if (serviceBound) {
+            timerTextView.setText(timerService.elapsedTime() + " seconds");
+            count = (int) timerService.elapsedTime();
+           // Toast.makeText(timerService, "" + timerService.elapsedTime(), Toast.LENGTH_SHORT).show();
+            if (count>=30){
+
+                if (Utilz.isInternetConnected(DetailsActivity.this)) {
+                    updateWalletApi(totalwallet, requestedamount);
+                }
+
+            }
+            if (count>100){
+                if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Stopping timer");
+                    }
+                    timerService.stopTimer();
+                    updateUIStopRun();
+            }
+        }
+    }
+
+    private void updateUIStartRun() {
+        mUpdateTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME);
+    }
+
+    /**
+     * Updates the UI when a run stops
+     */
+    private void updateUIStopRun() {
+        mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+    }
+
+    public class UIUpdateHandler extends Handler {
+
+        private final static int UPDATE_RATE_MS = 1000;
+        private final WeakReference<DetailsActivity> activity;
+
+        UIUpdateHandler(DetailsActivity activity) {
+            this.activity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message message) {
+            if (MyServiceAnoter.MSG_UPDATE_TIME == message.what) {
+                if (Log.isLoggable(MyServiceAnoter.TAG, Log.VERBOSE)) {
+                    Log.v(MyServiceAnoter.TAG, "updating time");
+                }
+                activity.get().updateUITimer();
+                sendEmptyMessageDelayed(MyServiceAnoter.MSG_UPDATE_TIME, UPDATE_RATE_MS);
+
+            }
+        }
     }
 }
