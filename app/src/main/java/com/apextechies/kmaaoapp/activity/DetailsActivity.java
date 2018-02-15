@@ -27,6 +27,10 @@ import com.apextechies.kmaaoapp.utilz.Download_web;
 import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -67,6 +71,9 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
     private int count = 0;
     private boolean isOnresume = false;
 
+    private AdView mAdView;
+
+
 
     private ArrayList<DetailsModelData> detailsModelData = new ArrayList<>();
     private DetailsAdapter detailsAdapter;
@@ -82,7 +89,20 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         if (Utilz.isInternetConnected(DetailsActivity.this)) {
             callRelesApi();
         }
+        initAds();
     }
+
+
+    private void initAds() {
+        MobileAds.initialize(this);
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId(getResources().getString(R.string.ADUNIT_ID));
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+    }
+
 
     @OnClick(R.id.wallet)
     void OnAmountClick() {
@@ -166,9 +186,17 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (serviceBound && timerService.isTimerRunning()) {
+                    if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                        Log.v(TAG, "Stopping timer");
+                    }
+                    timerService.stopTimer();
+                    updateUIStopRun();
+                }
                 finish();
             }
         });
+
 
         install_appname.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -326,6 +354,18 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
                 sendEmptyMessageDelayed(MyServiceAnoter.MSG_UPDATE_TIME, UPDATE_RATE_MS);
 
             }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (serviceBound && timerService.isTimerRunning()) {
+            if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Stopping timer");
+            }
+            timerService.stopTimer();
+            updateUIStopRun();
         }
     }
 }

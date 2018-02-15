@@ -8,4 +8,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="timer_start_button">timer_start_button</string>
     <string name="timer_stop_button">timer_stop_button</string>
+    <string name="ADUNIT_ID">ca-app-pub-1192059692690311/7522074444</string>
+    <string name="ADUNIT_ID_SECOND">ca-app-pub-1192059692690311/9526734337</string>
+    <string name="ADUNIT_IDTIRD">ca-app-pub-1192059692690311/6201253912</string>
 </resources>

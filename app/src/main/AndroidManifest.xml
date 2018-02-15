@@ -46,6 +46,7 @@
 
         <service android:name=".activity.MyService"></service>
         <service android:name=".activity.TimerService"></service>
+        <service android:name=".activity.TimerServiceMainActivity"></service>
     </application>
 
 </manifest>

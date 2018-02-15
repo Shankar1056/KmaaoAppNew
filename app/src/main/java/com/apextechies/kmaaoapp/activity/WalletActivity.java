@@ -19,6 +19,10 @@ import com.apextechies.kmaaoapp.common.ClsGeneral;
 import com.apextechies.kmaaoapp.common.PreferenceName;
 import com.apextechies.kmaaoapp.fragment.PaymentTransaction;
 import com.apextechies.kmaaoapp.fragment.RequestPayment;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +44,9 @@ public class WalletActivity extends AppCompatActivity {
     @BindView(R.id.wallet)
     TextView wallet;
 
+    private AdView mAdView;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +54,7 @@ public class WalletActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initWidgit();
         setupViewPager(viewPager);
+        initAds();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             tabLayout.setupWithViewPager(viewPager);//setting tab over viewpager
         }
@@ -73,6 +81,16 @@ public class WalletActivity extends AppCompatActivity {
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
+    }
+
+    private void initAds() {
+        MobileAds.initialize(this );
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId(getResources().getString(R.string.ADUNIT_ID));
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     private void initWidgit() {

@@ -33,6 +33,10 @@ import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
 import com.apextechies.kmaaoapp.utilz.Utilz;
 import com.apextechies.kmaaoapp.utilz.WebService;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,9 +62,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawer_layout;
     private ArrayList<CategoryDateModel> categoryDateModels = new ArrayList<>();
 
+    private AdView mAdView;
+
 
     public static final String TAG = MyServiceAnoter.class.getSimpleName();
-    private TimerService timerService;
+    private TimerServiceMainActivity timerService;
     private boolean serviceBound;
     private TextView timerTextView;
     private final Handler mUpdateTimeHandler = new UIUpdateHandler(this);
@@ -79,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initWidgit();
         navigationMappin();
         callCategoryApi();
+        initAds();
 
         new Handler().postDelayed(new Runnable() {
 
@@ -98,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }, 3000);
 
 
+    }
+
+    private void initAds() {
+        MobileAds.initialize(this);
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId(getResources().getString(R.string.ADUNIT_ID));
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     private void navigationMappin() {
@@ -191,6 +208,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (serviceBound && timerService.isTimerRunning()) {
+            if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Stopping timer");
+            }
+            timerService.stopTimer();
+            updateUIStopRun();
+        }
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -233,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
             Log.v(TAG, "Starting and binding service");
         }
-        Intent i = new Intent(this, TimerService.class);
+        Intent i = new Intent(this, TimerServiceMainActivity.class);
         startService(i);
         bindService(i, mConnection, 0);
     }
@@ -247,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (timerService.isTimerRunning()) {
                 timerService.foreground();
             } else {
-                stopService(new Intent(this, TimerService.class));
+                stopService(new Intent(this, TimerServiceMainActivity.class));
             }
             // Unbind the service
             unbindService(mConnection);
@@ -264,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (Log.isLoggable(TAG, Log.VERBOSE)) {
                 Log.v(TAG, "Service bound");
             }
-            TimerService.RunServiceBinder binder = (TimerService.RunServiceBinder) service;
+            TimerServiceMainActivity.RunServiceBinder binder = (TimerServiceMainActivity.RunServiceBinder) service;
             timerService = binder.getService();
             serviceBound = true;
             // Ensure the service is not in the foreground when bound
@@ -309,8 +334,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public void handleMessage(Message message) {
             if (MyServiceAnoter.MSG_UPDATE_TIME == message.what) {
-                if (Log.isLoggable(MyServiceAnoter.TAG, Log.VERBOSE)) {
-                    Log.v(MyServiceAnoter.TAG, "updating time");
+                if (Log.isLoggable(MainActivity.TAG, Log.VERBOSE)) {
+                    Log.v(MainActivity.TAG, "updating time");
                 }
                 activity.get().updateUITimer();
                 sendEmptyMessageDelayed(MyServiceAnoter.MSG_UPDATE_TIME, UPDATE_RATE_MS);
@@ -318,4 +343,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
     }
+
+
 }

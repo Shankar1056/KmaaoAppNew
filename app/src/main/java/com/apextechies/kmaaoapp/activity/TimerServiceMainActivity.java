@@ -15,9 +15,9 @@ import com.apextechies.kmaaoapp.R;
  * Created by Shankar on 2/15/2018.
  */
 
-public class TimerService extends Service {
+public class TimerServiceMainActivity extends Service {
 
-    private static final String TAG = TimerService.class.getSimpleName();
+    private static final String TAG = TimerServiceMainActivity.class.getSimpleName();
 
     // Start and end times in milliseconds
     private long startTime, endTime;
@@ -29,19 +29,17 @@ public class TimerService extends Service {
     private static final int NOTIFICATION_ID = 1;
 
     // Service binder
-    private final IBinder serviceBinder = new TimerService.RunServiceBinder();
+    private final IBinder serviceBinder = new RunServiceBinder();
 
     public class RunServiceBinder extends Binder {
-        TimerService getService() {
-            return TimerService.this;
+        TimerServiceMainActivity getService() {
+            return TimerServiceMainActivity.this;
         }
     }
 
     @Override
     public void onCreate() {
-        /*if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Creating service");
-        }*/
+
         startTime = 0;
         endTime = 0;
         isTimerRunning = false;
@@ -49,26 +47,18 @@ public class TimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-       /* if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Starting service");
-        }*/
+
         return Service.START_STICKY;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-       /* if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Binding service");
-        }*/
         return serviceBinder;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        /*if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Log.v(TAG, "Destroying service");
-        }*/
     }
 
     /**
@@ -147,4 +137,5 @@ public class TimerService extends Service {
 
         return builder.build();
     }
+
 }

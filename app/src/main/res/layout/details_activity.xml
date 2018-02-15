@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:background="@color/colorAccent">
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbarlayot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
@@ -42,12 +43,25 @@
     android:layout_margin="@dimen/margin_10"
     android:textSize="17sp"
     android:gravity="center"
-    android:singleLine="true"/>
+    android:singleLine="true"
+    android:layout_below="@+id/appbarlayot"/>
 <android.support.v7.widget.RecyclerView
     android:id="@+id/rv_details"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/margin_10">
+    android:layout_marginTop="@dimen/margin_10"
+    android:layout_below="@+id/install_appname">
 
 </android.support.v7.widget.RecyclerView>
-</LinearLayout>
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        android:visibility="visible"
+        ads:adUnitId="@string/ADUNIT_ID_SECOND">
+    </com.google.android.gms.ads.AdView>
+</RelativeLayout>
