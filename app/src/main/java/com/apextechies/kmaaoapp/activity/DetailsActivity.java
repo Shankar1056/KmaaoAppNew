@@ -283,6 +283,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
     }
 
     private void updateWalletApi(final int wallet, final int requestedamount) {
+        String date = Utilz.getCurrentDateInDigit(DetailsActivity.this);
         ArrayList<NameValuePair> nameValuePairs = new ArrayList();
         Download_web web = new Download_web(DetailsActivity.this, new OnTaskCompleted() {
             @Override
@@ -296,6 +297,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         });
         nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.USER_ID)));
         nameValuePairs.add(new BasicNameValuePair("amount", "" + (totalwallet + requestedamount)));
+        nameValuePairs.add(new BasicNameValuePair("todaydate", date));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SETWALLETAMOUNT);

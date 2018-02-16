@@ -5,6 +5,9 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/dialytask"
+            android:title="Daily Task" />
+        <item
             android:id="@+id/about"
             android:title="About App" />
         <item

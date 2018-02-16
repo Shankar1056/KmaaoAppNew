@@ -4,10 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white_color">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_20"
+        android:text="Welcome to Kmaao App"
+        android:gravity="center"
+        android:textSize="@dimen/margin_20"/>
 
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_centerInParent="true"
         android:background="@mipmap/logo"/>
 
@@ -16,5 +23,17 @@
         android:layout_width="wrap_content"
         android:layout_centerInParent="true"
         android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_corner_color_border"
+        android:gravity="center"
+        android:padding="@dimen/margin_10"
+        android:text="Best Online Earning Platform"
+        android:textSize="@dimen/margin_20" />
 
 </RelativeLayout>

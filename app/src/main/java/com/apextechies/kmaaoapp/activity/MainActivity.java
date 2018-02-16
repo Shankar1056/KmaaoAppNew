@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.adapter.AppListAdapter;
@@ -38,6 +39,8 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ArrayList<CategoryDateModel> categoryDateModels = new ArrayList<>();
 
     private AdView mAdView;
+    private long hour;
+    private long minute;
+    private long second;
 
 
     public static final String TAG = MyServiceAnoter.class.getSimpleName();
@@ -72,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private final Handler mUpdateTimeHandler = new UIUpdateHandler(this);
     // Message type for the handler
     public final static int MSG_UPDATE_TIME = 0;
+    private int totalwallet;
 
 
     @Override
@@ -208,13 +215,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (serviceBound && timerService.isTimerRunning()) {
-            if (Log.isLoggable(TAG, Log.VERBOSE)) {
-                Log.v(TAG, "Stopping timer");
-            }
-            timerService.stopTimer();
-            updateUIStopRun();
-        }
 
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -226,7 +226,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onResume() {
         super.onResume();
-        walletamount.setText("₹" + ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+        setwalletAmount( ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+      //  walletamount.setText("₹" + ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
     }
 
 
@@ -246,7 +247,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void updateUITimer() {
         if (serviceBound) {
-            timerTextView.setText(timerService.elapsedTime() + " seconds");
+
+           // timerTextView.setText(timerService.elapsedTime() + " seconds");
+            try {
+                long longVal = timerService.elapsedTime();
+                int hours = (int) longVal / 3600;
+                int remainder = (int) longVal - hours * 3600;
+                int mins = remainder / 60;
+                remainder = remainder - mins * 60;
+                int secs = remainder;
+
+               // int[] ints = {hours, mins, secs};
+
+                timerTextView.setText(""+hours +":"+mins+":"+secs+ " seconds");
+            }catch (Exception e){
+                timerTextView.setText(timerService.elapsedTime() + " seconds");
+            }
+
+            if (timerService.elapsedTime()>=900){
+                try {
+                    totalwallet = Integer.parseInt(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+                } catch (NumberFormatException e) {
+                    totalwallet = 0;
+                } catch (Exception e) {
+
+                }
+            }
+
             // Toast.makeText(timerService, "" + timerService.elapsedTime(), Toast.LENGTH_SHORT).show();
         }
     }
@@ -344,5 +371,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    private void updateWalletApi() {
+        String date = Utilz.getCurrentDateInDigit(MainActivity.this);
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList();
+        Download_web web = new Download_web(MainActivity.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
 
+                if (response != null && response.length() > 0) {
+                    Toast.makeText(MainActivity.this, "Daily Bonus Credited", Toast.LENGTH_SHORT).show();
+                    ClsGeneral.setPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT, "" + (totalwallet+5));
+                    setwalletAmount(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+                }
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(MainActivity.this, PreferenceName.USER_ID)));
+        nameValuePairs.add(new BasicNameValuePair("amount", "" + (totalwallet + 5)));
+        nameValuePairs.add(new BasicNameValuePair("todaydate", date));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.SETWALLETAMOUNT);
+    }
+
+    private void setwalletAmount(String preferences) {
+        walletamount.setText(" Wallet ₹" +preferences);
+    }
 }
