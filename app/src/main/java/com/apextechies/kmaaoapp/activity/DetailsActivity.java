@@ -75,6 +75,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
 
 
 
+
     private ArrayList<DetailsModelData> detailsModelData = new ArrayList<>();
     private DetailsAdapter detailsAdapter;
 
@@ -297,7 +298,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
         });
         nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DetailsActivity.this, PreferenceName.USER_ID)));
         nameValuePairs.add(new BasicNameValuePair("amount", "" + (totalwallet + requestedamount)));
-        nameValuePairs.add(new BasicNameValuePair("todaydate", date));
+       // nameValuePairs.add(new BasicNameValuePair("todaydate", date));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SETWALLETAMOUNT);
@@ -316,7 +317,7 @@ public class DetailsActivity extends AppCompatActivity implements MyService.Call
                 }
 
             }
-            if (count>100){
+            if (count>2 && isOnresume){
                 if (Log.isLoggable(TAG, Log.VERBOSE)) {
                         Log.v(TAG, "Stopping timer");
                     }

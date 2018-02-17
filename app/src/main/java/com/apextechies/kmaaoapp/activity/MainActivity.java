@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // Message type for the handler
     public final static int MSG_UPDATE_TIME = 0;
     private int totalwallet;
+    private  boolean load = true;
 
 
     @Override
@@ -241,6 +242,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             sendIntent.setType("text/plain");
             startActivity(sendIntent);
         }
+        if (item.getItemId() == R.id.dialytask) {
+            startActivity(new Intent(MainActivity.this, DialyTask.class));
+
+        }
         return false;
     }
 
@@ -263,9 +268,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }catch (Exception e){
                 timerTextView.setText(timerService.elapsedTime() + " seconds");
             }
-
-            if (timerService.elapsedTime()>=900){
+            if (timerService.elapsedTime()>=9 && load){
+                load = false;
                 try {
+                    String date = Utilz.getCurrentDateInDigit(MainActivity.this);
+
+                    if (ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TODAYDATE).equalsIgnoreCase(date)) {
+                        return;
+                    }
+                    updateWalletApi();
                     totalwallet = Integer.parseInt(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
                 } catch (NumberFormatException e) {
                     totalwallet = 0;
@@ -379,9 +390,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onTaskCompleted(String response) {
 
                 if (response != null && response.length() > 0) {
-                    Toast.makeText(MainActivity.this, "Daily Bonus Credited", Toast.LENGTH_SHORT).show();
-                    ClsGeneral.setPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT, "" + (totalwallet+5));
-                    setwalletAmount(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            ClsGeneral.setPreferences(MainActivity.this, PreferenceName.TODAYDATE, object.optString("data") );
+                            load = true;
+                            Toast.makeText(MainActivity.this, "Daily Bonus Credited", Toast.LENGTH_SHORT).show();
+                            ClsGeneral.setPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT, "" + (totalwallet+5));
+                            setwalletAmount(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -390,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         nameValuePairs.add(new BasicNameValuePair("todaydate", date));
         web.setData(nameValuePairs);
         web.setReqType(false);
-        web.execute(WebService.SETWALLETAMOUNT);
+        web.execute(WebService.SETWALLETAMOUNTDIALY);
     }
 
     private void setwalletAmount(String preferences) {

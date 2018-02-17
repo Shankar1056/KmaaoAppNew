@@ -146,6 +146,7 @@ public class SignupActivity extends AppCompatActivity {
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.CREATED_DATE, details.optString("user_created_date"));
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.optString("user_status"));
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT, details.optString("total_amount"));
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TODAYDATE, details.optString("today_date"));
         startActivity(new Intent(SignupActivity.this,MainActivity.class));
         finish();
     }

@@ -11,4 +11,15 @@
     <string name="ADUNIT_ID">ca-app-pub-1192059692690311/7522074444</string>
     <string name="ADUNIT_ID_SECOND">ca-app-pub-1192059692690311/9526734337</string>
     <string name="ADUNIT_IDTIRD">ca-app-pub-1192059692690311/6201253912</string>
+
+    <string name="ad_unit_idZeor">ca-app-pub-1192059692690311/1495722146</string>
+    <string name="ad_unit_idOne">ca-app-pub-1192059692690311/7486415421</string>
+    <string name="ad_unit_idTwo">ca-app-pub-1192059692690311/9537863695</string>
+    <string name="ad_unit_idtree">ca-app-pub-1192059692690311/9525421258</string>
+    <string name="ad_unit_idFour">ca-app-pub-1192059692690311/9701515227</string>
+    <string name="ad_unit_idFive">ca-app-pub-1192059692690311/1814452194</string>
+    <string name="ad_unit_idSix">ca-app-pub-1192059692690311/3699692589</string>
+    <string name="ad_unit_idSeven">ca-app-pub-1192059692690311/1986676731</string>
+    <string name="ad_unit_idEit">ca-app-pub-1192059692690311/4490030078</string>
+    <string name="ad_unit_idNine">ca-app-pub-1192059692690311/3532171627</string>
 </resources>
