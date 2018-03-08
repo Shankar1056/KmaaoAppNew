@@ -215,6 +215,7 @@ public class Login extends AppCompatActivity {
         ClsGeneral.setPreferences(Login.this, PreferenceName.USER_STATUS, details.optString("user_status"));
         ClsGeneral.setPreferences(Login.this, PreferenceName.TOTALAMOUNT, details.optString("total_amount"));
         ClsGeneral.setPreferences(Login.this, PreferenceName.TODAYDATE, details.optString("today_date"));
+        ClsGeneral.setPreferences(Login.this, PreferenceName.REFERAL, details.optString("my_referal"));
         if (details.optString("user_status").equalsIgnoreCase("true")){
             if (details.optString("user_email").equalsIgnoreCase("")){
                 startActivity(new Intent(Login.this,SignupActivity.class).

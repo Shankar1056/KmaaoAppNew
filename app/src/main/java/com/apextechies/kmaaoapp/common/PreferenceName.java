@@ -15,4 +15,5 @@ public class PreferenceName {
     public static String USER_STATUS = "user_status";
     public static String TOTALAMOUNT = "total_amount";
     public static String TODAYDATE = "today_date";
+    public static String REFERAL = "referal";
 }

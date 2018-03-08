@@ -221,6 +221,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+
+        }
+        if (serviceBound && timerService.isTimerRunning()) {
+            if (Log.isLoggable(TAG, Log.VERBOSE)) {
+                Log.v(TAG, "Stopping timer");
+            }
+            timerService.stopTimer();
+            updateUIStopRun();
         }
     }
 
@@ -238,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND);
             sendIntent.putExtra(Intent.EXTRA_TEXT,
-                    "Hey check out my app at: https://play.google.com/store/apps/details?id=com.google.android.apps.plus");
+                    "Hey check out my app at: https://play.google.com/store/apps/details?id=com.google.android.apps.plus \n use my Referal code and get instant rs 10 \n Referal code : "+ClsGeneral.getPreferences(MainActivity.this, PreferenceName.REFERAL));
             sendIntent.setType("text/plain");
             startActivity(sendIntent);
         }
@@ -268,21 +276,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }catch (Exception e){
                 timerTextView.setText(timerService.elapsedTime() + " seconds");
             }
-            if (timerService.elapsedTime()>=9 && load){
+            if (timerService.elapsedTime()>=900 && load){
                 load = false;
-                try {
+
                     String date = Utilz.getCurrentDateInDigit(MainActivity.this);
 
                     if (ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TODAYDATE).equalsIgnoreCase(date)) {
                         return;
                     }
-                    updateWalletApi();
+
+                try {
                     totalwallet = Integer.parseInt(ClsGeneral.getPreferences(MainActivity.this, PreferenceName.TOTALAMOUNT));
+
                 } catch (NumberFormatException e) {
                     totalwallet = 0;
                 } catch (Exception e) {
 
                 }
+                updateWalletApi();
             }
 
             // Toast.makeText(timerService, "" + timerService.elapsedTime(), Toast.LENGTH_SHORT).show();

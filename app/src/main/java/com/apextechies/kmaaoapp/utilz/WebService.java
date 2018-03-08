@@ -17,4 +17,6 @@ public class WebService {
     public static String REQUESTAMOUNT = BASE_URL+"get_requestAmount";
     public static String SETWALLETAMOUNT = BASE_URL+"set_walletAmount";
     public static String SETWALLETAMOUNTDIALY = BASE_URL+"set_updateWalletEveryday";
+    public static String DIALYTASKREPORT = BASE_URL+"set_dialyTaskRecord";
+    public static String REFERAL = BASE_URL+"set_applyReferal";
 }

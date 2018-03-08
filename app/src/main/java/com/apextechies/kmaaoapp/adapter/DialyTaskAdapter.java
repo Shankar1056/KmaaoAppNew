@@ -5,12 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -26,6 +26,7 @@ public class DialyTaskAdapter extends RecyclerView.Adapter<DialyTaskAdapter.MyVi
     private Context context;
     private int categorylist_row;
     private OnClickEvent onClickListener;
+    private ArrayList<String> taskcompletedList;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_taskname)
@@ -38,9 +39,10 @@ public class DialyTaskAdapter extends RecyclerView.Adapter<DialyTaskAdapter.MyVi
     }
 
 
-    public DialyTaskAdapter(Context context, List<String> subCatListModels, int categorylist_row, OnClickEvent onClickListener) {
+    public DialyTaskAdapter(Context context, List<String> subCatListModels, ArrayList<String> taskcompletedList, int categorylist_row, OnClickEvent onClickListener) {
         this.context = context;
         this.subCatListModels = subCatListModels;
+        this.taskcompletedList = taskcompletedList;
         this.categorylist_row = categorylist_row;
         this.onClickListener = onClickListener;
     }
@@ -55,7 +57,13 @@ public class DialyTaskAdapter extends RecyclerView.Adapter<DialyTaskAdapter.MyVi
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        holder.tv_taskname.setText(subCatListModels.get(position));
+        if (taskcompletedList.size()>0 && taskcompletedList.get(position).equalsIgnoreCase("completed")){
+            holder.tv_taskname.setText(taskcompletedList.get(position));
+            holder.tv_taskname.setClickable(false);
+            holder.tv_taskname.setAlpha(0.4f);
+        }else {
+            holder.tv_taskname.setText(subCatListModels.get(position));
+        }
         //Glide.with(context).load(pl.getImage()).into(holder.app_image);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {

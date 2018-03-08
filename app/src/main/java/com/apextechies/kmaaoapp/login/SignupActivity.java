@@ -1,14 +1,20 @@
 package com.apextechies.kmaaoapp.login;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
@@ -54,6 +60,7 @@ public class SignupActivity extends AppCompatActivity {
     private Date currentTime;
     private String currentDate = null;
     private String serverdeviceId;
+    private String randomNumber;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,6 +68,13 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
         ButterKnife.bind(this);
         getDeviceUniqueId();
+        getRandomNumber();
+
+    }
+
+    private void getRandomNumber() {
+        int randomPIN = (int)(Math.random()*9000)+1000;
+        randomNumber = String.valueOf(randomPIN);
     }
 
     private void getDeviceUniqueId() {
@@ -131,6 +145,7 @@ public class SignupActivity extends AppCompatActivity {
         nameValuePairs.add(new BasicNameValuePair("user_status", ""+true));
         nameValuePairs.add(new BasicNameValuePair("amount", "20"));
         nameValuePairs.add(new BasicNameValuePair("user_created_time", Utilz.getCurrentTime(SignupActivity.this)));
+        nameValuePairs.add(new BasicNameValuePair("my_referal", randomNumber));
         web.setData(nameValuePairs);
         web.setReqType(false);
         web.execute(WebService.SIGNUP);
@@ -147,8 +162,79 @@ public class SignupActivity extends AppCompatActivity {
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.USER_STATUS, details.optString("user_status"));
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT, details.optString("total_amount"));
         ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TODAYDATE, details.optString("today_date"));
-        startActivity(new Intent(SignupActivity.this,MainActivity.class));
-        finish();
+        ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.REFERAL, details.optString("my_referal"));
+
+        openCustomDialog();
+    }
+
+    private void openCustomDialog() {
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.activity_refrel);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.gravity = Gravity.BOTTOM;
+        lp.windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setAttributes(lp);
+        dialog.setCancelable(false);
+        final EditText edit_refral = (EditText) dialog.findViewById(R.id.edit_refral);
+        TextView apply = (TextView) dialog.findViewById(R.id.apply);
+        TextView skip = (TextView) dialog.findViewById(R.id.skip);
+        apply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                validateRefral(edit_refral.getText().toString().trim());
+            }
+        });
+        skip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                startActivity(new Intent(SignupActivity.this,MainActivity.class));
+                finish();
+            }
+        });
+
+        dialog.show();
+
+    }
+
+    private void validateRefral(String trim) {
+       String amount = ClsGeneral.getPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT);
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+        progress_bar.setVisibility(View.VISIBLE);
+        Download_web web = new Download_web(SignupActivity.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+                progress_bar.setVisibility(View.GONE);
+                if (response != null && response.length() > 0) {
+
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            String data = object.optString("data");
+                            if (data.equalsIgnoreCase("done")){
+                                startActivity(new Intent(SignupActivity.this,MainActivity.class));
+                                finish();
+                            }
+                            else if (data.equalsIgnoreCase("invalid code")){
+
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("user_id", getIntent().getStringExtra("id")));
+        nameValuePairs.add(new BasicNameValuePair("amount", ""+(Integer.parseInt(amount)+10)));
+        nameValuePairs.add(new BasicNameValuePair("others_referal", trim));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.REFERAL);
     }
 
 }

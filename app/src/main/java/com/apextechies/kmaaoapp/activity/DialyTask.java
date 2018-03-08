@@ -11,10 +11,22 @@ import android.widget.Toast;
 import com.apextechies.kmaaoapp.R;
 import com.apextechies.kmaaoapp.adapter.DialyTaskAdapter;
 import com.apextechies.kmaaoapp.allInterface.OnClickEvent;
+import com.apextechies.kmaaoapp.common.ClsGeneral;
+import com.apextechies.kmaaoapp.common.PreferenceName;
+import com.apextechies.kmaaoapp.utilz.Download_web;
+import com.apextechies.kmaaoapp.utilz.OnTaskCompleted;
+import com.apextechies.kmaaoapp.utilz.Utilz;
+import com.apextechies.kmaaoapp.utilz.WebService;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +40,16 @@ import butterknife.ButterKnife;
 
 public class DialyTask extends AppCompatActivity {
 
-    private InterstitialAd mInterstitialAd1,mInterstitialAd2,mInterstitialAd3,mInterstitialAd4,mInterstitialAd5,mInterstitialAd6,
-            mInterstitialAd7,mInterstitialAd8,mInterstitialAd9,mInterstitialAd10;
+    private InterstitialAd mInterstitialAd1, mInterstitialAd2, mInterstitialAd3, mInterstitialAd4, mInterstitialAd5, mInterstitialAd6,
+            mInterstitialAd7, mInterstitialAd8, mInterstitialAd9, mInterstitialAd10;
     @BindView(R.id.rv_dialytask)
     RecyclerView rv_dialytask;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
+    private String task1, task2, task3, task4, task5, task6, task7, task8, task9, task10;
+    private boolean taskClicked = false;
+    private ArrayList<String> taskcompletedList = new ArrayList<>();
+    private DialyTaskAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -111,6 +127,70 @@ public class DialyTask extends AppCompatActivity {
             }
         });
 
+        callTaskApi();
+
+    }
+
+    private void callTaskApi() {
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+        String date = Utilz.getCurrentDateInDigit(DialyTask.this);
+        Download_web web = new Download_web(DialyTask.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+
+                if (response.length()>0){
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            JSONArray array = object.getJSONArray("data");
+                            JSONObject jo = array.getJSONObject(0);
+                            setData(jo);
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("todaydate", date));
+        nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DialyTask.this, PreferenceName.USER_ID)));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.DIALYTASKREPORT);
+    }
+
+    private void setData(JSONObject response) {
+        String todaydata = response.optString("today_date");
+        task1 = response.optString("dialy_task_1");
+        task2 = response.optString("dialy_task_2");
+        task3 = response.optString("dialy_task_3");
+        task4 = response.optString("dialy_task_4");
+        task5 = response.optString("dialy_task_5");
+        task6 = response.optString("dialy_task_6");
+        task7 = response.optString("dialy_task_7");
+        task8 = response.optString("dialy_task_8");
+        task9 = response.optString("dialy_task_9");
+        task10 = response.optString("dialy_task_10");
+
+        String completely_today = response.optString("completely_today");
+
+        setButtonText();
+    }
+
+    private void setButtonText() {
+        taskcompletedList.add(task1);
+        taskcompletedList.add(task2);
+        taskcompletedList.add(task3);
+        taskcompletedList.add(task4);
+        taskcompletedList.add(task5);
+        taskcompletedList.add(task6);
+        taskcompletedList.add(task7);
+        taskcompletedList.add(task8);
+        taskcompletedList.add(task9);
+        taskcompletedList.add(task10);
+
+        adapter.notifyDataSetChanged();
     }
 
     private void startGame() {
@@ -157,51 +237,82 @@ public class DialyTask extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         toolbar.setTitle("Dialy Task");
         rv_dialytask.setLayoutManager(new GridLayoutManager(this, 3));
-        rv_dialytask.setAdapter(new DialyTaskAdapter(DialyTask.this, getTaskList(), R.layout.dialytask_row, new OnClickEvent() {
+         adapter = (new DialyTaskAdapter(DialyTask.this, getTaskList(), taskcompletedList, R.layout.dialytask_row, new OnClickEvent() {
             @Override
             public void onClick(int pos) {
 
-                switch (pos){
+                switch (pos) {
                     case 0:
-
-                        showInterstitial();
+                        task1 = "completed";
+                        taskClicked = true;
+                        showAllInterstitial();
                         break;
                     case 1:
+                        task2 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 2:
+                        task3 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 3:
+                        task4 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 4:
+                        task5 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 5:
+                        task6 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 6:
                         showInterstitial();
                         break;
                     case 7:
+                        task8 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 8:
+                        task9 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                     case 9:
+                        task10 = "completed";
+                        taskClicked = true;
                         showInterstitial();
                         break;
                 }
             }
         }));
+        rv_dialytask.setAdapter(adapter);
+    }
+
+    private void showAllInterstitial() {
+        showInterstitial();
+        showInterstitia2();
+        showInterstitia3();
+        showInterstitia4();
+        showInterstitia5();
+        showInterstitia6();
+        showInterstitia7();
+        showInterstitia8();
+        showInterstitia9();
+        showInterstitial0();
     }
 
     private List<String> getTaskList() {
         ArrayList<String> list = new ArrayList<>();
-        for (int i=0; i<10; i++){
-            list.add("Task "+i);
+        for (int i = 1; i <= 10; i++) {
+            list.add("Task " + i);
         }
         return list;
     }
@@ -215,6 +326,7 @@ public class DialyTask extends AppCompatActivity {
             startGame1();
         }
     }
+
     private void showInterstitia2() {
         if (mInterstitialAd2 != null && mInterstitialAd2.isLoaded()) {
             mInterstitialAd2.show();
@@ -223,6 +335,7 @@ public class DialyTask extends AppCompatActivity {
             startGame2();
         }
     }
+
     private void showInterstitia3() {
         if (mInterstitialAd3 != null && mInterstitialAd3.isLoaded()) {
             mInterstitialAd3.show();
@@ -231,6 +344,7 @@ public class DialyTask extends AppCompatActivity {
             startGame3();
         }
     }
+
     private void showInterstitia4() {
         if (mInterstitialAd4 != null && mInterstitialAd4.isLoaded()) {
             mInterstitialAd4.show();
@@ -239,6 +353,7 @@ public class DialyTask extends AppCompatActivity {
             startGame4();
         }
     }
+
     private void showInterstitia5() {
         if (mInterstitialAd5 != null && mInterstitialAd5.isLoaded()) {
             mInterstitialAd5.show();
@@ -247,6 +362,7 @@ public class DialyTask extends AppCompatActivity {
             startGame5();
         }
     }
+
     private void showInterstitia6() {
         if (mInterstitialAd6 != null && mInterstitialAd6.isLoaded()) {
             mInterstitialAd6.show();
@@ -255,6 +371,7 @@ public class DialyTask extends AppCompatActivity {
             startGame6();
         }
     }
+
     private void showInterstitia7() {
         if (mInterstitialAd7 != null && mInterstitialAd7.isLoaded()) {
             mInterstitialAd7.show();
@@ -263,6 +380,7 @@ public class DialyTask extends AppCompatActivity {
             startGame7();
         }
     }
+
     private void showInterstitia8() {
         if (mInterstitialAd8 != null && mInterstitialAd8.isLoaded()) {
             mInterstitialAd8.show();
@@ -271,6 +389,7 @@ public class DialyTask extends AppCompatActivity {
             startGame8();
         }
     }
+
     private void showInterstitia9() {
         if (mInterstitialAd9 != null && mInterstitialAd9.isLoaded()) {
             mInterstitialAd9.show();
@@ -279,6 +398,7 @@ public class DialyTask extends AppCompatActivity {
             startGame9();
         }
     }
+
     private void showInterstitial0() {
         if (mInterstitialAd10 != null && mInterstitialAd10.isLoaded()) {
             mInterstitialAd10.show();
@@ -294,59 +414,110 @@ public class DialyTask extends AppCompatActivity {
             mInterstitialAd1.loadAd(adRequest);
         }
     }
+
     private void startGame2() {
         if (!mInterstitialAd2.isLoading() && !mInterstitialAd2.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd2.loadAd(adRequest);
         }
     }
+
     private void startGame3() {
         if (!mInterstitialAd3.isLoading() && !mInterstitialAd3.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd3.loadAd(adRequest);
         }
     }
+
     private void startGame4() {
         if (!mInterstitialAd4.isLoading() && !mInterstitialAd4.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd4.loadAd(adRequest);
         }
     }
+
     private void startGame5() {
         if (!mInterstitialAd5.isLoading() && !mInterstitialAd5.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd5.loadAd(adRequest);
         }
     }
+
     private void startGame6() {
         if (!mInterstitialAd6.isLoading() && !mInterstitialAd6.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd6.loadAd(adRequest);
         }
     }
+
     private void startGame7() {
         if (!mInterstitialAd7.isLoading() && !mInterstitialAd7.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd7.loadAd(adRequest);
         }
     }
+
     private void startGame8() {
         if (!mInterstitialAd8.isLoading() && !mInterstitialAd8.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd8.loadAd(adRequest);
         }
     }
+
     private void startGame9() {
         if (!mInterstitialAd9.isLoading() && !mInterstitialAd9.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd9.loadAd(adRequest);
         }
     }
+
     private void startGame10() {
         if (!mInterstitialAd10.isLoading() && !mInterstitialAd10.isLoaded()) {
             AdRequest adRequest = new AdRequest.Builder().build();
             mInterstitialAd10.loadAd(adRequest);
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (taskClicked){
+            if (Utilz.isInternetConnected(DialyTask.this))
+            saveUpdatetaskCompleted();
+        }
+    }
+
+    private void saveUpdatetaskCompleted() {
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
+        String date = Utilz.getCurrentDateInDigit(DialyTask.this);
+        Download_web web = new Download_web(DialyTask.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+
+                if (response.length()>0){
+
+                }
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("task1", task1));
+        nameValuePairs.add(new BasicNameValuePair("task2", task2));
+        nameValuePairs.add(new BasicNameValuePair("task3", task3));
+        nameValuePairs.add(new BasicNameValuePair("task4", task4));
+        nameValuePairs.add(new BasicNameValuePair("task5", task5));
+        nameValuePairs.add(new BasicNameValuePair("task6", task6));
+        nameValuePairs.add(new BasicNameValuePair("task7", task7));
+        nameValuePairs.add(new BasicNameValuePair("task8", task8));
+        nameValuePairs.add(new BasicNameValuePair("task9", task9));
+        nameValuePairs.add(new BasicNameValuePair("task10", task10));
+        nameValuePairs.add(new BasicNameValuePair("date", date));
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        taskClicked = false;
+    }
+
 
 }
