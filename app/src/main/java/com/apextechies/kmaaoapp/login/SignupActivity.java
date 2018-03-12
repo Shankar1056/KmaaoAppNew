@@ -201,8 +201,9 @@ public class SignupActivity extends AppCompatActivity {
 
     }
 
+    String amount = "";
     private void validateRefral(String trim) {
-       String amount = ClsGeneral.getPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT);
+        amount = ClsGeneral.getPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT);
         ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
         progress_bar.setVisibility(View.VISIBLE);
         Download_web web = new Download_web(SignupActivity.this, new OnTaskCompleted() {
@@ -216,6 +217,7 @@ public class SignupActivity extends AppCompatActivity {
                         if (object.optString("status").equalsIgnoreCase("true")){
                             String data = object.optString("data");
                             if (data.equalsIgnoreCase("done")){
+                                ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT,""+(Integer.parseInt(amount)+10));
                                 startActivity(new Intent(SignupActivity.this,MainActivity.class));
                                 finish();
                             }

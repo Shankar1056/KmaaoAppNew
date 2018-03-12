@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.Toast;
 
 import com.apextechies.kmaaoapp.R;
@@ -50,6 +51,8 @@ public class DialyTask extends AppCompatActivity {
     private boolean taskClicked = false;
     private ArrayList<String> taskcompletedList = new ArrayList<>();
     private DialyTaskAdapter adapter;
+    private int count =0;
+    private int totalwallet;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -132,16 +135,18 @@ public class DialyTask extends AppCompatActivity {
     }
 
     private void callTaskApi() {
+        Utilz.showProgress(DialyTask.this, getResources().getString(R.string.pleasewait));
         ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
         String date = Utilz.getCurrentDateInDigit(DialyTask.this);
         Download_web web = new Download_web(DialyTask.this, new OnTaskCompleted() {
             @Override
             public void onTaskCompleted(String response) {
+                Utilz.dismissProgressDialog();
+                if (response.length() > 0) {
 
-                if (response.length()>0){
                     try {
                         JSONObject object = new JSONObject(response);
-                        if (object.optString("status").equalsIgnoreCase("true")){
+                        if (object.optString("status").equalsIgnoreCase("true")) {
                             JSONArray array = object.getJSONArray("data");
                             JSONObject jo = array.getJSONObject(0);
                             setData(jo);
@@ -175,10 +180,10 @@ public class DialyTask extends AppCompatActivity {
 
         String completely_today = response.optString("completely_today");
 
-        setButtonText();
+        setButtonText(completely_today);
     }
 
-    private void setButtonText() {
+    private void setButtonText(String completely_today) {
         taskcompletedList.add(task1);
         taskcompletedList.add(task2);
         taskcompletedList.add(task3);
@@ -191,6 +196,51 @@ public class DialyTask extends AppCompatActivity {
         taskcompletedList.add(task10);
 
         adapter.notifyDataSetChanged();
+        countCompleted(completely_today);
+    }
+
+    private void countCompleted(String completely_today) {
+        for (int i=0; i<taskcompletedList.size(); i++){
+            if (taskcompletedList.get(i).equalsIgnoreCase("completed")){
+                count = count+1;
+            }
+        }
+        if (count==10){
+            if (completely_today.equalsIgnoreCase("yes")){
+                return;
+            }
+            updateAmount();
+        }
+    }
+
+    private void updateAmount() {
+        String date = Utilz.getCurrentDateInDigit(DialyTask.this);
+        ArrayList<NameValuePair> nameValuePairs = new ArrayList();
+        Download_web web = new Download_web(DialyTask.this, new OnTaskCompleted() {
+            @Override
+            public void onTaskCompleted(String response) {
+                finish();
+                startActivity(getIntent());
+                if (response != null && response.length() > 0) {
+                    try {
+                        JSONObject object = new JSONObject(response);
+                        if (object.optString("status").equalsIgnoreCase("true")){
+                            ClsGeneral.setPreferences(DialyTask.this, PreferenceName.TODAYDATE, object.optString("data") );
+                            Toast.makeText(DialyTask.this, "Daily won Bonus", Toast.LENGTH_SHORT).show();
+                            ClsGeneral.setPreferences(DialyTask.this, PreferenceName.TOTALAMOUNT, "" + (totalwallet+10  ));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DialyTask.this, PreferenceName.USER_ID)));
+        nameValuePairs.add(new BasicNameValuePair("amount", "" + (totalwallet + 10)));
+        nameValuePairs.add(new BasicNameValuePair("todaydate", date));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.SETWALLETAMOUNTDIALY);
     }
 
     private void startGame() {
@@ -237,7 +287,7 @@ public class DialyTask extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         toolbar.setTitle("Dialy Task");
         rv_dialytask.setLayoutManager(new GridLayoutManager(this, 3));
-         adapter = (new DialyTaskAdapter(DialyTask.this, getTaskList(), taskcompletedList, R.layout.dialytask_row, new OnClickEvent() {
+        adapter = (new DialyTaskAdapter(DialyTask.this, getTaskList(), taskcompletedList, R.layout.dialytask_row, new OnClickEvent() {
             @Override
             public void onClick(int pos) {
 
@@ -250,50 +300,67 @@ public class DialyTask extends AppCompatActivity {
                     case 1:
                         task2 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 2:
                         task3 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 3:
                         task4 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 4:
                         task5 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 5:
                         task6 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 6:
-                        showInterstitial();
+                        task7 = "completed";
+                        taskClicked = true;
+                        showAllInterstitial();
                         break;
                     case 7:
                         task8 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 8:
                         task9 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                     case 9:
                         task10 = "completed";
                         taskClicked = true;
-                        showInterstitial();
+                        showAllInterstitial();
                         break;
                 }
             }
         }));
         rv_dialytask.setAdapter(adapter);
+
+        try {
+            totalwallet = Integer.parseInt(ClsGeneral.getPreferences(DialyTask.this, PreferenceName.TOTALAMOUNT));
+
+        } catch (NumberFormatException e) {
+            totalwallet = 0;
+        } catch (Exception e) {
+
+        }
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void showAllInterstitial() {
@@ -322,7 +389,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd1 != null && mInterstitialAd1.isLoaded()) {
             mInterstitialAd1.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame1();
         }
     }
@@ -331,7 +398,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd2 != null && mInterstitialAd2.isLoaded()) {
             mInterstitialAd2.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame2();
         }
     }
@@ -340,7 +407,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd3 != null && mInterstitialAd3.isLoaded()) {
             mInterstitialAd3.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame3();
         }
     }
@@ -349,7 +416,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd4 != null && mInterstitialAd4.isLoaded()) {
             mInterstitialAd4.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame4();
         }
     }
@@ -358,7 +425,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd5 != null && mInterstitialAd5.isLoaded()) {
             mInterstitialAd5.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame5();
         }
     }
@@ -367,7 +434,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd6 != null && mInterstitialAd6.isLoaded()) {
             mInterstitialAd6.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame6();
         }
     }
@@ -385,7 +452,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd8 != null && mInterstitialAd8.isLoaded()) {
             mInterstitialAd8.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame8();
         }
     }
@@ -394,7 +461,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd9 != null && mInterstitialAd9.isLoaded()) {
             mInterstitialAd9.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame9();
         }
     }
@@ -403,7 +470,7 @@ public class DialyTask extends AppCompatActivity {
         if (mInterstitialAd10 != null && mInterstitialAd10.isLoaded()) {
             mInterstitialAd10.show();
         } else {
-            Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(this, "Try Again", Toast.LENGTH_SHORT).show();
             startGame10();
         }
     }
@@ -482,22 +549,30 @@ public class DialyTask extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (taskClicked){
+        if (taskClicked) {
             if (Utilz.isInternetConnected(DialyTask.this))
-            saveUpdatetaskCompleted();
+                saveUpdatetaskCompleted();
         }
     }
 
     private void saveUpdatetaskCompleted() {
+        if (count==9)
+        Utilz.showProgress(DialyTask.this, getResources().getString(R.string.pleasewait));
         ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
         String date = Utilz.getCurrentDateInDigit(DialyTask.this);
         Download_web web = new Download_web(DialyTask.this, new OnTaskCompleted() {
             @Override
             public void onTaskCompleted(String response) {
-
-                if (response.length()>0){
-
+                Utilz.dismissProgressDialog();
+                if (count==9)
+                {
+                    updateAmount();
                 }
+                else {
+                    finish();
+                    startActivity(getIntent());
+                }
+
             }
         });
         nameValuePairs.add(new BasicNameValuePair("task1", task1));
@@ -511,6 +586,11 @@ public class DialyTask extends AppCompatActivity {
         nameValuePairs.add(new BasicNameValuePair("task9", task9));
         nameValuePairs.add(new BasicNameValuePair("task10", task10));
         nameValuePairs.add(new BasicNameValuePair("date", date));
+        nameValuePairs.add(new BasicNameValuePair("completely_today", "yes"));
+        nameValuePairs.add(new BasicNameValuePair("user_id", ClsGeneral.getPreferences(DialyTask.this, PreferenceName.USER_ID)));
+        web.setData(nameValuePairs);
+        web.setReqType(false);
+        web.execute(WebService.INSERTDIALYTASK);
     }
 
     @Override

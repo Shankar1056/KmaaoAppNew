@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="right|center"
-                android:text="bfebfuwe"
+                android:text=""
                 android:textColor="@color/white_color"
                 android:paddingRight="15sp"/>
         </android.support.v7.widget.Toolbar>

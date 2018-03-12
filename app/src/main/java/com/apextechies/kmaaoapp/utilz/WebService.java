@@ -19,4 +19,5 @@ public class WebService {
     public static String SETWALLETAMOUNTDIALY = BASE_URL+"set_updateWalletEveryday";
     public static String DIALYTASKREPORT = BASE_URL+"set_dialyTaskRecord";
     public static String REFERAL = BASE_URL+"set_applyReferal";
+    public static String INSERTDIALYTASK = BASE_URL+"set_dialyTaskRecordInsert";
 }
