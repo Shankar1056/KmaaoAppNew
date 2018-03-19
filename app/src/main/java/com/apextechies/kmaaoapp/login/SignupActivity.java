@@ -217,7 +217,7 @@ public class SignupActivity extends AppCompatActivity {
                         if (object.optString("status").equalsIgnoreCase("true")){
                             String data = object.optString("data");
                             if (data.equalsIgnoreCase("done")){
-                                ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT,""+(Integer.parseInt(amount)+10));
+                                ClsGeneral.setPreferences(SignupActivity.this, PreferenceName.TOTALAMOUNT,""+(Integer.parseInt(amount)+5));
                                 startActivity(new Intent(SignupActivity.this,MainActivity.class));
                                 finish();
                             }
@@ -232,7 +232,8 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
         nameValuePairs.add(new BasicNameValuePair("user_id", getIntent().getStringExtra("id")));
-        nameValuePairs.add(new BasicNameValuePair("amount", ""+(Integer.parseInt(amount)+10)));
+        nameValuePairs.add(new BasicNameValuePair("to", ""+(Integer.parseInt(amount)+5)));
+        nameValuePairs.add(new BasicNameValuePair("from", ""+(Integer.parseInt(amount)+10)));
         nameValuePairs.add(new BasicNameValuePair("others_referal", trim));
         web.setData(nameValuePairs);
         web.setReqType(false);
